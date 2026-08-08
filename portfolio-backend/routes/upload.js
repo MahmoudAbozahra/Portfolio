@@ -1,64 +1,41 @@
 const express = require('express');
-const { v2: cloudinary } = require('cloudinary');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
+
 const upload = require('../middleware/upload');
 const Portfolio = require('../models/Portfolio');
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true
-});
+const uploadsDir = path.join(__dirname, '../uploads');
 
-const uploadBufferToCloudinary = (buffer, options = {}) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        resource_type: 'image',
-        ...options
-      },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      }
-    );
-
-    stream.end(buffer);
-  });
-};
-
-const getCloudinaryPublicIdFromUrl = (url) => {
-  if (!url || !url.includes('res.cloudinary.com')) return null;
-
-  try {
-    const cleanUrl = url.split('?')[0];
-    const marker = '/upload/';
-    const markerIndex = cleanUrl.indexOf(marker);
-
-    if (markerIndex === -1) return null;
-
-    let afterUpload = cleanUrl.slice(markerIndex + marker.length);
-    afterUpload = afterUpload.replace(/^v\d+\//, '');
-    return afterUpload.replace(/\.[^/.]+$/, '');
-  } catch {
-    return null;
+const deleteLocalImage = (imageUrl) => {
+  if (!imageUrl || !imageUrl.startsWith('/uploads/')) {
+    return;
   }
-};
 
-const deleteCloudinaryImage = async (url) => {
-  const publicId = getCloudinaryPublicIdFromUrl(url);
-  if (!publicId) return;
+  const filename = path.basename(imageUrl);
+  const filePath = path.join(uploadsDir, filename);
 
   try {
-    await cloudinary.uploader.destroy(publicId, {
-      resource_type: 'image',
-      invalidate: true
-    });
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
   } catch (error) {
-    console.warn('Cloudinary delete warning:', error.message);
+    console.warn('Could not delete local image:', error.message);
   }
+};
+
+const removeUploadedFiles = (files = []) => {
+  files.forEach((file) => {
+    try {
+      if (file?.path && fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+    } catch (error) {
+      console.warn('Could not remove uploaded file:', error.message);
+    }
+  });
 };
 
 router.post('/avatar', upload.single('avatar'), async (req, res) => {
@@ -70,148 +47,142 @@ router.post('/avatar', upload.single('avatar'), async (req, res) => {
     const data = await Portfolio.findOne();
 
     if (!data) {
+      removeUploadedFiles([req.file]);
       return res.status(404).json({ error: 'Portfolio not found' });
     }
 
-    if (data.personal?.avatar) {
-      await deleteCloudinaryImage(data.personal.avatar);
-    }
+    const oldAvatar = data.personal?.avatar;
+    const imageUrl = `/uploads/${req.file.filename}`;
 
-    const result = await uploadBufferToCloudinary(req.file.buffer, {
-      folder: 'portfolio/avatar',
-      public_id: 'profile',
-      overwrite: true,
-      transformation: [
-        {
-          width: 800,
-          height: 800,
-          crop: 'limit',
-          quality: 'auto',
-          fetch_format: 'auto'
-        }
-      ]
-    });
-
-    data.personal.avatar = result.secure_url;
+    data.personal.avatar = imageUrl;
     await data.save();
 
-    res.json({
+    if (oldAvatar && oldAvatar !== imageUrl) {
+      deleteLocalImage(oldAvatar);
+    }
+
+    return res.json({
       success: true,
-      avatarUrl: result.secure_url,
-      publicId: result.public_id
+      avatarUrl: imageUrl
     });
   } catch (error) {
+    if (req.file) {
+      removeUploadedFiles([req.file]);
+    }
+
     console.error('Avatar upload error:', error);
-    res.status(500).json({ error: error.message });
+
+    return res.status(500).json({
+      error: error.message
+    });
   }
 });
 
-router.post('/project/:projectId/images', upload.array('images', 10), async (req, res) => {
-  try {
-    const { projectId } = req.params;
+router.post(
+  '/project/:projectId/images',
+  upload.array('images', 10),
+  async (req, res) => {
+    try {
+      const { projectId } = req.params;
 
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: 'No files uploaded' });
-    }
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: 'No files uploaded' });
+      }
 
-    const data = await Portfolio.findOne();
+      const data = await Portfolio.findOne();
 
-    if (!data) {
-      return res.status(404).json({ error: 'Portfolio not found' });
-    }
+      if (!data) {
+        removeUploadedFiles(req.files);
+        return res.status(404).json({ error: 'Portfolio not found' });
+      }
 
-    const project = data.projects.id(projectId);
+      const project = data.projects.id(projectId);
 
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
+      if (!project) {
+        removeUploadedFiles(req.files);
+        return res.status(404).json({ error: 'Project not found' });
+      }
 
-    const uploadedResults = [];
+      const imageUrls = req.files.map(
+        (file) => `/uploads/${file.filename}`
+      );
 
-    for (const file of req.files) {
-      const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      project.images.push(...imageUrls);
+      await data.save();
 
-      const result = await uploadBufferToCloudinary(file.buffer, {
-        folder: `portfolio/projects/${projectId}`,
-        public_id: uniqueName,
-        transformation: [
-          {
-            width: 1800,
-            height: 1800,
-            crop: 'limit',
-            quality: 'auto',
-            fetch_format: 'auto'
-          }
-        ]
+      return res.json({
+        success: true,
+        projectId: project._id,
+        images: imageUrls,
+        project
       });
+    } catch (error) {
+      removeUploadedFiles(req.files || []);
 
-      uploadedResults.push(result);
+      console.error('Project image upload error:', error);
+
+      if (error.name === 'CastError') {
+        return res.status(400).json({ error: 'Invalid project ID' });
+      }
+
+      return res.status(500).json({
+        error: error.message
+      });
     }
-
-    const imageUrls = uploadedResults.map((result) => result.secure_url);
-
-    project.images.push(...imageUrls);
-    await data.save();
-
-    res.json({
-      success: true,
-      projectId: project._id,
-      images: imageUrls,
-      project
-    });
-  } catch (error) {
-    console.error('Project image upload error:', error);
-
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'Invalid project ID' });
-    }
-
-    res.status(500).json({ error: error.message });
   }
-});
+);
 
-router.delete('/project/:projectId/image/:imageIndex', async (req, res) => {
-  try {
-    const { projectId, imageIndex } = req.params;
+router.delete(
+  '/project/:projectId/image/:imageIndex',
+  async (req, res) => {
+    try {
+      const { projectId, imageIndex } = req.params;
 
-    const data = await Portfolio.findOne();
+      const data = await Portfolio.findOne();
 
-    if (!data) {
-      return res.status(404).json({ error: 'Portfolio not found' });
+      if (!data) {
+        return res.status(404).json({ error: 'Portfolio not found' });
+      }
+
+      const project = data.projects.id(projectId);
+
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+
+      const index = Number(imageIndex);
+
+      if (
+        !Number.isInteger(index) ||
+        index < 0 ||
+        index >= project.images.length
+      ) {
+        return res.status(404).json({ error: 'Image not found' });
+      }
+
+      const imageUrl = project.images[index];
+
+      project.images.splice(index, 1);
+      await data.save();
+
+      deleteLocalImage(imageUrl);
+
+      return res.json({
+        success: true,
+        project
+      });
+    } catch (error) {
+      console.error('Delete project image error:', error);
+
+      if (error.name === 'CastError') {
+        return res.status(400).json({ error: 'Invalid project ID' });
+      }
+
+      return res.status(500).json({
+        error: error.message
+      });
     }
-
-    const project = data.projects.id(projectId);
-
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-
-    const index = Number(imageIndex);
-
-    if (!Number.isInteger(index) || index < 0 || index >= project.images.length) {
-      return res.status(404).json({ error: 'Image not found' });
-    }
-
-    const imageUrl = project.images[index];
-
-    await deleteCloudinaryImage(imageUrl);
-
-    project.images.splice(index, 1);
-    await data.save();
-
-    res.json({
-      success: true,
-      project
-    });
-  } catch (error) {
-    console.error('Delete project image error:', error);
-
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'Invalid project ID' });
-    }
-
-    res.status(500).json({ error: error.message });
   }
-});
+);
 
 module.exports = router;

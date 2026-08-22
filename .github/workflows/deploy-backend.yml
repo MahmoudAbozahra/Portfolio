@@ -1,0 +1,32 @@
+name: Deploy Portfolio Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "portfolio-backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/mahmoud/apps/Portfolio
+
+            git fetch origin
+            git reset --hard origin/main
+
+            cd portfolio-backend
+
+            npm ci
+
+            pm2 restart portfolio-api

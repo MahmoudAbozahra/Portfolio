@@ -2293,17 +2293,9 @@ h4 {
     height: 36px;
   }
 
-  .image-nav-btn {
-    width: 34px;
-    height: 34px;
-  }
-
-  .image-nav-btn.prev {
-    left: 8px;
-  }
-
-  .image-nav-btn.next {
-    right: 8px;
+  .image-nav-btn,
+  .modal-nav-btn {
+    display: none;
   }
 
   .image-counter {

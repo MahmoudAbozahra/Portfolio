@@ -1,6 +1,7 @@
 # Deployment Note for Vercel
 
 ## Local run
+
 1. Install Node.js 18+.
 2. Open the project folder:
    `d:\my_work\PortFolio\react-portfolio`
@@ -12,6 +13,7 @@
    `npm run build`
 
 ## Upload to GitHub
+
 1. Create a new repository on GitHub.
 2. From the project folder, initialize Git if needed and push the code to the repository.
 3. Make sure these files are committed:
@@ -24,6 +26,7 @@
    - `DEPLOYMENT.md`
 
 ## Deploy on Vercel
+
 1. Go to https://vercel.com.
 2. Sign in with GitHub.
 3. Click **Add New Project**.
@@ -36,6 +39,7 @@
 7. Click **Deploy**.
 
 ## Connect the project to the portfolio domain
+
 1. Open the project in Vercel.
 2. Go to **Settings** > **Domains**.
 3. Add your domain or subdomain.
@@ -43,6 +47,7 @@
 5. Wait for DNS propagation, then verify the live link.
 
 ## Recommended workflow
+
 - Push changes to GitHub.
 - Vercel will auto-deploy every time you push to the connected branch.
 - Use the `main` branch as the production branch.

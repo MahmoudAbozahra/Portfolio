@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../../contexts/DataContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const AdminLogin = ({ setIsAdmin, setShowAdmin }) => {
   const [username, setUsername] = useState('');
@@ -7,18 +8,22 @@ const AdminLogin = ({ setIsAdmin, setShowAdmin }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useData();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     const result = await login(username, password);
+
     if (result.success) {
       setIsAdmin(true);
-      setShowAdmin(false); 
+      setShowAdmin(false);
     } else {
-      setError(result.error || 'Invalid username or password');
+      setError(result.error || t('invalidLogin'));
     }
+
     setLoading(false);
   };
 
@@ -30,6 +35,7 @@ const AdminLogin = ({ setIsAdmin, setShowAdmin }) => {
     <section className="section" id="admin-login">
       <div className="panel admin-login-panel" style={{ maxWidth: '420px', margin: '0 auto', padding: '2.5rem', textAlign: 'center' }}>
         <button
+          type="button"
           onClick={handleBack}
           style={{
             background: 'none',
@@ -48,25 +54,26 @@ const AdminLogin = ({ setIsAdmin, setShowAdmin }) => {
           onMouseEnter={(e) => { e.target.style.background = 'rgba(0,0,0,0.05)'; }}
           onMouseLeave={(e) => { e.target.style.background = 'transparent'; }}
         >
-          ← Back to Home
+          ← {t('backToHome')}
         </button>
 
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>🔐 Admin Login</h2>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>{t('adminLogin')}</h2>
         <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '2rem' }}>
-          Enter your credentials to access the admin panel
+          {t('adminLoginHint')}
         </p>
 
         <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.3rem', fontWeight: '600', fontSize: '0.9rem' }}>
-              Username or Email
+              {t('usernameOrEmail')}
             </label>
             <input
               type="text"
-              placeholder="Enter username or email"
+              placeholder={t('usernameOrEmailPlaceholder')}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              autoComplete="username"
               style={{
                 width: '100%',
                 padding: '0.8rem 1rem',
@@ -83,14 +90,15 @@ const AdminLogin = ({ setIsAdmin, setShowAdmin }) => {
 
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.3rem', fontWeight: '600', fontSize: '0.9rem' }}>
-              Password
+              {t('password')}
             </label>
             <input
               type="password"
-              placeholder="Enter password"
+              placeholder={t('passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
               style={{
                 width: '100%',
                 padding: '0.8rem 1rem',
@@ -114,7 +122,7 @@ const AdminLogin = ({ setIsAdmin, setShowAdmin }) => {
               background: 'rgba(220,53,69,0.1)',
               borderRadius: '8px'
             }}>
-              ❌ {error}
+              {error}
             </p>
           )}
 
@@ -149,20 +157,9 @@ const AdminLogin = ({ setIsAdmin, setShowAdmin }) => {
               }
             }}
           >
-            {loading ? '⏳ Logging in...' : '🔑 Login'}
+            {loading ? t('loggingIn') : t('login')}
           </button>
         </form>
-
-        <p style={{
-          textAlign: 'center',
-          marginTop: '1.5rem',
-          color: '#888',
-          fontSize: '0.85rem',
-          padding: '0.5rem',
-          background: 'rgba(0,0,0,0.03)',
-          borderRadius: '8px'
-        }}>
-        </p>
       </div>
     </section>
   );

@@ -175,13 +175,13 @@ const PersonalInfoManager = () => {
             </div>
           )}
           <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.3rem' }}>
-            يمكنك رفع صورة من جهازك (حد أقصى 5 ميجابايت)
+            Upload a profile avatar (max 5MB)
           </p>
         </div>
 
         <div style={{ marginBottom: '1rem' }}>
           <label style={{ display: 'block', marginBottom: '0.3rem', fontWeight: '600' }}>
-            Key Strengths (أدخل كل نقطة في سطر منفصل)
+            Key Strengths 
           </label>
           <textarea
             value={formData.keyStrengths ? formData.keyStrengths.join('\n') : ''}

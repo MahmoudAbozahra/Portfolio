@@ -1,16 +1,18 @@
 import React from 'react';
 import { useData } from '../../contexts/DataContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 
 const Contact = () => {
   const { data } = useData();
+  const { t } = useLanguage();
   const { personal } = data;
 
   return (
     <section className="section contact-section section-alt" id="contact">
       <div className="section-head center">
-        <p className="section-kicker">Contact</p>
-        <h2>Open to backend and Django-based product roles</h2>
+        <p className="section-kicker">{t('contact')}</p>
+        <h2>{t('contactTitle')}</h2>
       </div>
 
       <div className="contact-wrapper">
@@ -18,19 +20,19 @@ const Contact = () => {
         <div className="contact-cards-grid">
           <a href={`mailto:${personal.email}`} className="contact-card-link">
             <div className="contact-mini-card">
-              <span className="contact-mini-label">Email</span>
+              <span className="contact-mini-label">{t('email')}</span>
               <span className="contact-mini-value">{personal.email}</span>
             </div>
           </a>
           <a href={`tel:${personal.phone}`} className="contact-card-link">
             <div className="contact-mini-card">
-              <span className="contact-mini-label">Phone</span>
+              <span className="contact-mini-label">{t('phone')}</span>
               <span className="contact-mini-value">{personal.phone}</span>
             </div>
           </a>
           <div className="contact-card-link">
             <div className="contact-mini-card">
-              <span className="contact-mini-label">Location</span>
+              <span className="contact-mini-label">{t('location')}</span>
               <span className="contact-mini-value">{personal.location}</span>
             </div>
           </div>

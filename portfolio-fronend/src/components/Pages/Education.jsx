@@ -1,16 +1,18 @@
 import React from 'react';
 import { useData } from '../../contexts/DataContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { FaGraduationCap, FaCertificate, FaLanguage } from 'react-icons/fa';
 
 const Education = () => {
   const { data } = useData();
+  const { t } = useLanguage();
   const { education } = data;
 
   return (
     <section className="section" id="education">
       <div className="section-head">
-        <p className="section-kicker">Education</p>
-        <h2>Academic background and training</h2>
+        <p className="section-kicker">{t('educationKicker')}</p>
+        <h2>{t('educationTitle')}</h2>
       </div>
 
       <div className="education-wrapper">
@@ -31,7 +33,7 @@ const Education = () => {
             <FaCertificate />
           </div>
           <div className="education-content">
-            <h3>Training</h3>
+            <h3>{t('training')}</h3>
             <p className="education-detail">{education.training}</p>
           </div>
         </div>
@@ -41,7 +43,7 @@ const Education = () => {
             <FaLanguage /> {/* تغيير الأيقونة */}
           </div>
           <div className="education-content">
-            <h3>Languages</h3>
+            <h3>{t('languages')}</h3>
             <div className="languages-list">
               {data.skills.languages.items.map((lang, idx) => (
                 <div className="language-item" key={idx}>

@@ -1,7 +1,10 @@
 import React from 'react';
 import { FaCog } from 'react-icons/fa';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const Header = ({ setShowAdmin, showAdmin }) => {
+  const { t, toggleLanguage } = useLanguage();
+
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {
@@ -25,16 +28,25 @@ const Header = ({ setShowAdmin, showAdmin }) => {
         Mahmoud
       </a>
       <nav className="nav-links">
-        <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>Profile</a>
-        <a href="#experience" onClick={(e) => { e.preventDefault(); scrollToSection('experience'); }}>Experience</a>
-        <a href="#projects" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>Projects</a>
-        <a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>Skills</a>
-        <a href="#education" onClick={(e) => { e.preventDefault(); scrollToSection('education'); }}>Education</a>
-        <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>Contact</a>
+        <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>{t('navProfile')}</a>
+        <a href="#experience" onClick={(e) => { e.preventDefault(); scrollToSection('experience'); }}>{t('navExperience')}</a>
+        <a href="#projects" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>{t('navProjects')}</a>
+        <a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>{t('navSkills')}</a>
+        <a href="#education" onClick={(e) => { e.preventDefault(); scrollToSection('education'); }}>{t('navEducation')}</a>
+        <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>{t('navContact')}</a>
         <button
+          type="button"
+          className="language-toggle"
+          onClick={toggleLanguage}
+          title={t('languageName')}
+        >
+          {t('switchLanguage')}
+        </button>
+        <button
+          type="button"
           className="admin-link"
           onClick={() => setShowAdmin(prev => !prev)}
-          title={showAdmin ? 'Close Admin' : 'Open Admin Panel'}
+          title={showAdmin ? t('closeAdmin') : t('openAdmin')}
         >
           <FaCog />
         </button>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useData } from '../../contexts/DataContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -13,11 +14,11 @@ const SERVER_URL = `${API_BASE_URL}`;
 
 const Projects = () => {
   const { data } = useData();
+  const { t } = useLanguage();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageIndex, setImageIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState('');
 
   /*
    * Separate touch refs for:
@@ -31,6 +32,9 @@ const Projects = () => {
 
   const imageTouchStartX = useRef(null);
   const imageTouchStartY = useRef(null);
+
+  const modalTouchStartX = useRef(null);
+  const modalTouchStartY = useRef(null);
 
 
   const getImageSrc = (image) => {
@@ -52,8 +56,8 @@ const Projects = () => {
     return (
       <section className="section">
         <div className="section-head center">
-          <p className="section-kicker">Projects</p>
-          <h2>Loading...</h2>
+          <p className="section-kicker">{t('projects')}</p>
+          <h2>{t('loading')}</h2>
         </div>
       </section>
     );
@@ -62,6 +66,7 @@ const Projects = () => {
   const totalPages = data.projects.length;
   const currentProject = data.projects[currentIndex];
   const images = currentProject.images || [];
+  const modalImage = images[imageIndex];
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % totalPages);
@@ -73,20 +78,26 @@ const Projects = () => {
     setImageIndex(0);
   };
 
-  const nextImage = (e) => {
-    e?.stopPropagation();
-
+  const showNextImage = () => {
     if (images.length > 1) {
       setImageIndex((prev) => (prev + 1) % images.length);
     }
   };
 
-  const prevImage = (e) => {
-    e?.stopPropagation();
-
+  const showPrevImage = () => {
     if (images.length > 1) {
       setImageIndex((prev) => (prev - 1 + images.length) % images.length);
     }
+  };
+
+  const nextImage = (e) => {
+    e?.stopPropagation();
+    showNextImage();
+  };
+
+  const prevImage = (e) => {
+    e?.stopPropagation();
+    showPrevImage();
   };
 
   /* =========================
@@ -178,20 +189,66 @@ const Projects = () => {
     if (!isHorizontalSwipe || !passedThreshold) return;
 
     if (diffX > 0) {
-      setImageIndex((prev) => (prev + 1) % images.length);
+      showNextImage();
     } else {
-      setImageIndex((prev) => (prev - 1 + images.length) % images.length);
+      showPrevImage();
     }
   };
 
-  const openModal = (image) => {
-    setSelectedImage(image);
+  /* =========================
+     MODAL SWIPE
+     ========================= */
+
+  const handleModalTouchStart = (e) => {
+    e.stopPropagation();
+
+    if (!e.touches?.length) return;
+
+    modalTouchStartX.current = e.touches[0].clientX;
+    modalTouchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleModalTouchEnd = (e) => {
+    e.stopPropagation();
+
+    if (
+      modalTouchStartX.current === null ||
+      modalTouchStartY.current === null ||
+      !e.changedTouches?.length
+    ) {
+      return;
+    }
+
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+
+    const diffX = modalTouchStartX.current - endX;
+    const diffY = modalTouchStartY.current - endY;
+
+    modalTouchStartX.current = null;
+    modalTouchStartY.current = null;
+
+    if (images.length <= 1) return;
+
+    const isHorizontalSwipe = Math.abs(diffX) > Math.abs(diffY);
+    const passedThreshold = Math.abs(diffX) >= 45;
+
+    if (!isHorizontalSwipe || !passedThreshold) return;
+
+    if (diffX > 0) {
+      showNextImage();
+    } else {
+      showPrevImage();
+    }
+  };
+
+  const openModal = (index) => {
+    setImageIndex(index);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedImage('');
   };
 
   /*
@@ -208,6 +265,14 @@ const Projects = () => {
       if (e.key === 'Escape') {
         closeModal();
       }
+
+      if (e.key === 'ArrowRight') {
+        showNextImage();
+      }
+
+      if (e.key === 'ArrowLeft') {
+        showPrevImage();
+      }
     };
 
     window.addEventListener('keydown', handleEsc);
@@ -216,12 +281,12 @@ const Projects = () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleEsc);
     };
-  }, [isModalOpen]);
+  }, [isModalOpen, images.length]);
 
   return (
     <section className="section" id="projects">
       <div className="section-head center">
-        <h2>Projects</h2>
+        <h2>{t('projects')}</h2>
       </div>
 
       <div
@@ -233,7 +298,7 @@ const Projects = () => {
           type="button"
           className="slider-btn prev"
           onClick={prevSlide}
-          aria-label="Previous project"
+          aria-label={t('previousProject')}
         >
           <FaChevronLeft />
         </button>
@@ -249,14 +314,14 @@ const Projects = () => {
                 >
                   <div
                     className="project-image"
-                    onClick={() => openModal(images[imageIndex])}
+                    onClick={() => openModal(imageIndex)}
                     role="button"
                     tabIndex={0}
                     aria-label={`Open ${currentProject.title} image ${imageIndex + 1}`}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        openModal(images[imageIndex]);
+                        openModal(imageIndex);
                       }
                     }}
                   >
@@ -268,7 +333,7 @@ const Projects = () => {
 
                     <div className="image-overlay">
                       <FaExpand className="expand-icon" />
-                      <span>Click to expand</span>
+                      <span>{t('clickToExpand')}</span>
                     </div>
                   </div>
 
@@ -278,7 +343,7 @@ const Projects = () => {
                         type="button"
                         className="image-nav-btn prev"
                         onClick={prevImage}
-                        aria-label="Previous image"
+                        aria-label={t('previousImage')}
                       >
                         <FaChevronLeft />
                       </button>
@@ -287,7 +352,7 @@ const Projects = () => {
                         type="button"
                         className="image-nav-btn next"
                         onClick={nextImage}
-                        aria-label="Next image"
+                        aria-label={t('nextImage')}
                       >
                         <FaChevronRight />
                       </button>
@@ -316,7 +381,7 @@ const Projects = () => {
                 </div>
               ) : (
                 <div className="project-image-placeholder">
-                  <span>📷 No images uploaded</span>
+                  <span>{t('noImagesUploaded')}</span>
                 </div>
               )}
             </div>
@@ -355,7 +420,7 @@ const Projects = () => {
           type="button"
           className="slider-btn next"
           onClick={nextSlide}
-          aria-label="Next project"
+          aria-label={t('nextProject')}
         >
           <FaChevronRight />
         </button>
@@ -383,30 +448,58 @@ const Projects = () => {
         </div>
       )}
 
-      {isModalOpen && selectedImage && (
+      {isModalOpen && modalImage && (
         <div
           className="image-modal-overlay"
           onClick={closeModal}
           role="dialog"
           aria-modal="true"
-          aria-label="Project image preview"
+          aria-label={t('projectImagePreview')}
         >
           <div
             className="image-modal-content"
             onClick={(e) => e.stopPropagation()}
+            onTouchStart={handleModalTouchStart}
+            onTouchEnd={handleModalTouchEnd}
           >
             <button
               type="button"
               className="modal-close-btn"
               onClick={closeModal}
-              aria-label="Close modal"
+              aria-label={t('closeModal')}
             >
               <FaTimes />
             </button>
 
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="modal-nav-btn prev"
+                  onClick={prevImage}
+                  aria-label={t('previousFullImage')}
+                >
+                  <FaChevronLeft />
+                </button>
+
+                <button
+                  type="button"
+                  className="modal-nav-btn next"
+                  onClick={nextImage}
+                  aria-label={t('nextFullImage')}
+                >
+                  <FaChevronRight />
+                </button>
+
+                <div className="modal-image-counter">
+                  {imageIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
+
             <img
-              src={getImageSrc(selectedImage)}
-              alt="Project full view"
+              src={getImageSrc(modalImage)}
+              alt={`${currentProject.title} full view ${imageIndex + 1}`}
               className="modal-image"
               draggable="false"
             />

@@ -1,13 +1,15 @@
 import React from 'react';
 import { useData } from '../../contexts/DataContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const Experience = () => {
   const { data } = useData();
+  const { t } = useLanguage();
 
   return (
     <section className="section" id="experience">
       <div className="section-head">
-        <h2>Experience</h2>
+        <h2>{t('experience')}</h2>
       </div>
 
       {data.experience.map((exp, index) => (

@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const Portfolio = require('../models/Portfolio');
+const { requireAdmin } = require('../middleware/auth');
 
 /* =========================
    GET COMPLETE PORTFOLIO
@@ -27,7 +28,7 @@ router.get('/', async (req, res) => {
    UPDATE COMPLETE PORTFOLIO
    Kept for existing admin sections
    ========================= */
-router.put('/', async (req, res) => {
+router.put('/', requireAdmin, async (req, res) => {
   try {
     let data = await Portfolio.findOne();
 
@@ -56,7 +57,7 @@ router.put('/', async (req, res) => {
 /* =========================
    UPDATE PERSONAL
    ========================= */
-router.put('/personal', async (req, res) => {
+router.put('/personal', requireAdmin, async (req, res) => {
   try {
     let data = await Portfolio.findOne();
 
@@ -81,7 +82,7 @@ router.put('/personal', async (req, res) => {
    CREATE PROJECT
    MongoDB creates the subdocument _id
    ========================= */
-router.post('/projects', async (req, res) => {
+router.post('/projects', requireAdmin, async (req, res) => {
   try {
     let data = await Portfolio.findOne();
 
@@ -126,7 +127,7 @@ router.post('/projects', async (req, res) => {
 /* =========================
    UPDATE PROJECT
    ========================= */
-router.put('/projects/:projectId', async (req, res) => {
+router.put('/projects/:projectId', requireAdmin, async (req, res) => {
   try {
     const data = await Portfolio.findOne();
 
@@ -193,7 +194,7 @@ router.put('/projects/:projectId', async (req, res) => {
 /* =========================
    DELETE PROJECT
    ========================= */
-router.delete('/projects/:projectId', async (req, res) => {
+router.delete('/projects/:projectId', requireAdmin, async (req, res) => {
   try {
     const data = await Portfolio.findOne();
 
@@ -237,7 +238,7 @@ router.delete('/projects/:projectId', async (req, res) => {
 /* =========================
    RESET PORTFOLIO
    ========================= */
-router.delete('/', async (req, res) => {
+router.delete('/', requireAdmin, async (req, res) => {
   try {
     await Portfolio.deleteMany({});
 

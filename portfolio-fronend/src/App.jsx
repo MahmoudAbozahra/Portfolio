@@ -1,5 +1,6 @@
 import React from 'react';
 import { DataProvider, useData } from './contexts/DataContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
 import Home from './components/Pages/Home';
@@ -15,6 +16,7 @@ import './App.css';
 
 function AppContent() {
   const { loading, data, isAuthenticated } = useData();
+  const { t } = useLanguage();
   const [showAdmin, setShowAdmin] = React.useState(false);
 
   if (loading || !data) {
@@ -24,8 +26,8 @@ function AppContent() {
         <main className="main-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-            <h2>Loading Portfolio...</h2>
-            <p style={{ color: '#767676' }}>Please wait while we fetch your data</p>
+            <h2>{t('loadingPortfolio')}</h2>
+            <p style={{ color: '#767676' }}>{t('loadingPortfolioHint')}</p>
           </div>
         </main>
         <Footer />
@@ -62,9 +64,11 @@ function AppContent() {
 
 function App() {
   return (
-    <DataProvider>
-      <AppContent />
-    </DataProvider>
+    <LanguageProvider>
+      <DataProvider>
+        <AppContent />
+      </DataProvider>
+    </LanguageProvider>
   );
 }
 

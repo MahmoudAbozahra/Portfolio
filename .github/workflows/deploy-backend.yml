@@ -8,6 +8,8 @@ on:
       - "portfolio-backend/**"
       - ".github/workflows/deploy-backend.yml"
 
+  workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest

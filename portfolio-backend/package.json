@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "syntax:check": "node --check app.js && node --check server.js && node --check routes/auth.js && node --check routes/portfolio.js && node --check routes/upload.js && node --check middleware/auth.js && node --check models/User.js && node --check models/Portfolio.js",
+    "admin:upsert": "node scripts/upsert-admin.js",
+    "syntax:check": "node --check app.js && node --check server.js && node --check routes/auth.js && node --check routes/portfolio.js && node --check routes/upload.js && node --check middleware/auth.js && node --check models/User.js && node --check models/Portfolio.js && node --check scripts/upsert-admin.js",
     "test": "node --test"
   },
   "engines": {

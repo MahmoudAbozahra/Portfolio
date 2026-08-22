@@ -6,6 +6,7 @@ const router = express.Router();
 
 const upload = require('../middleware/upload');
 const Portfolio = require('../models/Portfolio');
+const { requireAdmin } = require('../middleware/auth');
 
 const uploadsDir = path.join(__dirname, '../uploads');
 
@@ -38,7 +39,7 @@ const removeUploadedFiles = (files = []) => {
   });
 };
 
-router.post('/avatar', upload.single('avatar'), async (req, res) => {
+router.post('/avatar', requireAdmin, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -80,6 +81,7 @@ router.post('/avatar', upload.single('avatar'), async (req, res) => {
 
 router.post(
   '/project/:projectId/images',
+  requireAdmin,
   upload.array('images', 10),
   async (req, res) => {
     try {
@@ -134,6 +136,7 @@ router.post(
 
 router.delete(
   '/project/:projectId/image/:imageIndex',
+  requireAdmin,
   async (req, res) => {
     try {
       const { projectId, imageIndex } = req.params;

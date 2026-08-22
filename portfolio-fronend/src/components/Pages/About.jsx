@@ -1,15 +1,17 @@
 import React from 'react';
 import { useData } from '../../contexts/DataContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const About = () => {
   const { data, loading } = useData();
+  const { t } = useLanguage();
 
   if (loading || !data) {
     return (
       <section id="about" className="section">
         <div className="section-head">
-          <p className="section-kicker">Profile</p>
-          <h2>Loading...</h2>
+          <p className="section-kicker">{t('profile')}</p>
+          <h2>{t('loading')}</h2>
         </div>
       </section>
     );
@@ -21,7 +23,7 @@ const About = () => {
   return (
     <section id="about" className="section">
       <div className="section-head">
-        <h2>Profile</h2>
+        <h2>{t('profile')}</h2>
       </div>
 
       <div className="panel soft-panel about-card">
@@ -30,7 +32,7 @@ const About = () => {
         {keyStrengths.length > 0 && (
           <div className="about-strengths">
             <p className="about-strengths-title">
-              <strong>Key strengths:</strong>
+              <strong>{t('keyStrengths')}</strong>
             </p>
 
             <ul className="about-strengths-list">

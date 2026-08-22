@@ -1,98 +1,78 @@
-const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
-const fs = require('fs');
 
 dotenv.config();
 
-const app = express();
+const app = require('./app');
+
 const PORT = process.env.PORT || 5000;
 
-const uploadsDir = path.join(__dirname, 'uploads');
+const getRequiredEnv = (name) => {
+  const value = process.env[name];
 
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+  if (!value) {
+    throw new Error(`${name} is required`);
+  }
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'http://localhost:5173'
-].filter(Boolean);
-
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true
-  })
-);
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-app.use(
-  '/uploads',
-  express.static(uploadsDir, {
-    maxAge: '7d',
-    etag: true
-  })
-);
-
-const portfolioRoutes = require('./routes/portfolio');
-const uploadRoutes = require('./routes/upload');
-const authRoutes = require('./routes/auth');
-
-app.use('/api/portfolio', portfolioRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/auth', authRoutes);
-
-app.get('/api/health', (req, res) => {
-  res.json({ success: true, service: 'portfolio-api' });
-});
-
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(async () => {
-    console.log('✅ MongoDB connected');
-    await createDefaultAdmin();
-  })
-  .catch((error) => {
-    console.error('❌ MongoDB connection error:', error);
-  });
+  return value;
+};
 
 async function createDefaultAdmin() {
   try {
     const User = require('./models/User');
 
+    const username = process.env.ADMIN_USERNAME || getRequiredEnv('ADMIN_EMAIL');
+    const email = getRequiredEnv('ADMIN_EMAIL');
+    const password = getRequiredEnv('ADMIN_PASSWORD');
+
     const adminExists = await User.findOne({
-      username: process.env.ADMIN_USERNAME || 'admin'
+      $or: [{ username }, { email }]
     });
 
     if (!adminExists) {
       const admin = new User({
-        username: process.env.ADMIN_USERNAME || 'admin',
-        email: process.env.ADMIN_EMAIL || 'admin@portfolio.com',
-        password: process.env.ADMIN_PASSWORD || 'admin123',
+        username,
+        email,
+        password,
         role: 'admin'
       });
 
       await admin.save();
-      console.log('✅ Default admin user created');
+      console.log('Default admin user created');
     }
   } catch (error) {
     console.error('Error creating default admin:', error);
+    throw error;
   }
 }
 
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+async function startServer() {
+  try {
+    getRequiredEnv('MONGODB_URI');
+    getRequiredEnv('JWT_SECRET');
+    getRequiredEnv('ADMIN_EMAIL');
+    getRequiredEnv('ADMIN_PASSWORD');
+
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('MongoDB connected');
+
+    await createDefaultAdmin();
+
+    app.listen(PORT, '127.0.0.1', () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Server startup error:', error);
+    process.exit(1);
+  }
+}
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = {
+  app,
+  createDefaultAdmin,
+  startServer
+};

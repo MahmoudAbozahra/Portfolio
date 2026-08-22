@@ -1,5 +1,6 @@
 import React from 'react';
 import { useData } from '../../contexts/DataContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { FaGithub, FaLinkedin, FaEnvelope, FaFileDownload } from 'react-icons/fa';
 
 
@@ -24,12 +25,13 @@ const getImageSrc = (image) => {
 
 const Home = () => {
   const { data, loading } = useData();
+  const { t } = useLanguage();
 
   if (loading || !data || !data.personal) {
     return (
       <section className="hero-section" id="home">
         <div className="hero-container" style={{ justifyContent: 'center' }}>
-          <h1 style={{ color: '#fff' }}>Loading...</h1>
+          <h1 style={{ color: '#fff' }}>{t('loading')}</h1>
         </div>
       </section>
     );
@@ -49,7 +51,7 @@ const Home = () => {
           <div className="hero-actions">
             <a className="hero-action-btn" href="#contact">
               <FaEnvelope />
-              <span>Contact Me</span>
+              <span>{t('contactMe')}</span>
             </a>
             <a
               className="hero-action-btn"
@@ -58,7 +60,7 @@ const Home = () => {
               rel="noreferrer"
             >
               <FaFileDownload />
-              <span>View Resume</span>
+              <span>{t('viewResume')}</span>
             </a>
             <a className="hero-action-btn" href={personal.github} target="_blank" rel="noreferrer">
               <FaGithub />

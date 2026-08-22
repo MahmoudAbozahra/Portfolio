@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const { getJwtSecret } = require('../config');
 
 router.post('/login', async (req, res) => {
   try {
@@ -35,7 +34,7 @@ router.post('/login', async (req, res) => {
         username: user.username,
         role: user.role 
       },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '7d' }
     );
 
@@ -93,7 +92,7 @@ router.get('/verify', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getJwtSecret());
     const user = await User.findById(decoded.id).select('-password');
     if (!user) {
       return res.status(401).json({ error: 'User not found' });

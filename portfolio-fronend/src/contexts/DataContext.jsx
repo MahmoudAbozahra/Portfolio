@@ -1,385 +1,97 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import apiClient, { setCsrfToken } from '../lib/apiClient';
 
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-
-const API_URL = `${API_BASE_URL}/api/portfolio`;
-const AUTH_URL = `${API_BASE_URL}/api/auth`;
-
-const DataContext = createContext();
+const DataContext = createContext(null);
+const portfolioKey = ['portfolio'];
 
 export const useData = () => {
-  const context = useContext(DataContext);
-
-  if (!context) {
-    throw new Error('useData must be used within a DataProvider');
-  }
-
+  const context = React.useContext(DataContext);
+  if (!context) throw new Error('useData must be used within a DataProvider');
   return context;
 };
 
 export const DataProvider = ({ children }) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  const queryClient = useQueryClient();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const sessionRefreshStarted = useRef(false);
+  const portfolioQuery = useQuery({ queryKey: portfolioKey, queryFn: async () => (await apiClient.get('/portfolio')).data });
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('adminToken');
-
-    return token
-      ? { Authorization: `Bearer ${token}` }
-      : {};
-  };
-
-  useEffect(() => {
-    const verifyToken = async () => {
-      const token = localStorage.getItem('adminToken');
-
-      if (token) {
-        try {
-          const response = await axios.get(`${AUTH_URL}/verify`, {
-            headers: getAuthHeaders()
-          });
-
-          setIsAuthenticated(true);
-          setUser(response.data.user);
-        } catch (err) {
-          localStorage.removeItem('adminToken');
-          setIsAuthenticated(false);
-          setUser(null);
-        }
-      }
-
-      setAuthLoading(false);
-    };
-
-    verifyToken();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      const response = await axios.get(API_URL);
-
-      setData(response.data);
-      setError(null);
-
-      localStorage.setItem('portfolioData', JSON.stringify(response.data));
-
-      return response.data;
-    } catch (err) {
-      console.error('❌ Error fetching data:', err);
-
-      setError(
-        'Failed to load data from server. Please make sure the backend is running.'
-      );
-
-      const saved = localStorage.getItem('portfolioData');
-
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setData(parsed);
-          setError('⚠️ Using cached data. Backend might be offline.');
-          return parsed;
-        } catch {
-          setError('❌ No cached data available.');
-        }
-      }
-
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData().catch(() => {});
-  }, []);
-
-  const login = async (username, password) => {
-    try {
-      const response = await axios.post(`${AUTH_URL}/login`, {
-        username,
-        password
-      });
-
-      if (response.data.success) {
-        localStorage.setItem('adminToken', response.data.token);
-        setIsAuthenticated(true);
-        setUser(response.data.user);
-
-        return { success: true };
-      }
-
-      return {
-        success: false,
-        error: 'Invalid credentials'
-      };
-    } catch (err) {
-      return {
-        success: false,
-        error: err.response?.data?.error || 'Login failed'
-      };
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('adminToken');
+  const clearSession = useCallback(() => {
+    setCsrfToken(null);
     setIsAuthenticated(false);
     setUser(null);
-  };
+  }, []);
 
-  const saveData = async (newData) => {
+  const refreshSession = useCallback(async () => {
     try {
-      const response = await axios.put(API_URL, newData, {
-        headers: getAuthHeaders()
-      });
+      const { data } = await apiClient.get('/auth/me');
+      setCsrfToken(data.csrfToken);
+      setIsAuthenticated(true);
+      setUser(data.user);
+      return data.user;
+    } catch {
+      clearSession();
+      return null;
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [clearSession]);
 
-      setData(response.data);
-      localStorage.setItem('portfolioData', JSON.stringify(response.data));
+  useEffect(() => {
+    if (!sessionRefreshStarted.current) {
+      sessionRefreshStarted.current = true;
+      refreshSession();
+    }
+    const expired = () => clearSession();
+    window.addEventListener('portfolio:session-expired', expired);
+    return () => window.removeEventListener('portfolio:session-expired', expired);
+  }, [refreshSession, clearSession]);
 
-      return response.data;
-    } catch (err) {
-      console.error('Error saving data:', err);
-      throw err;
+  const setPortfolio = (value) => queryClient.setQueryData(portfolioKey, value);
+  const fetchData = () => queryClient.fetchQuery({ queryKey: portfolioKey, queryFn: async () => (await apiClient.get('/portfolio')).data });
+  const login = async (username, password) => {
+    try {
+      const { data } = await apiClient.post('/auth/login', { username, password });
+      setCsrfToken(data.csrfToken);
+      setIsAuthenticated(true);
+      setUser(data.user);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.error || 'Login failed' };
     }
   };
-
-  const updatePersonal = async (personalData) => {
-    try {
-      const response = await axios.put(
-        `${API_URL}/personal`,
-        personalData,
-        { headers: getAuthHeaders() }
-      );
-
-      setData(response.data);
-      return response.data;
-    } catch (err) {
-      console.error('Error updating personal info:', err);
-      throw err;
-    }
+  const logout = async () => {
+    try { await apiClient.post('/auth/logout'); } catch { /* Local state still clears if the server session already expired. */ }
+    finally { clearSession(); queryClient.removeQueries({ queryKey: ['users'] }); }
   };
+  const saveData = async (newData) => { const { data } = await apiClient.put('/portfolio', newData); setPortfolio(data); return data; };
+  const updatePersonal = async (personalData) => { const { data } = await apiClient.put('/portfolio/personal', personalData); setPortfolio(data); return data; };
 
-  /* =========================
-     EXPERIENCE
-     ========================= */
+  const data = portfolioQuery.data;
+  const replaceArray = (field, items) => saveData({ ...data, [field]: items });
+  const addExperience = (item) => replaceArray('experience', [...(data.experience || []), item]);
+  const updateExperience = (index, item) => replaceArray('experience', data.experience.map((value, position) => position === index ? item : value));
+  const deleteExperience = (index) => replaceArray('experience', data.experience.filter((_, position) => position !== index));
+  const addProject = async (project) => { const response = await apiClient.post('/portfolio/projects', project); setPortfolio(response.data.portfolio); return response.data.project; };
+  const updateProject = async (projectId, project) => { const response = await apiClient.put(`/portfolio/projects/${projectId}`, project); setPortfolio(response.data.portfolio); return response.data.project; };
+  const deleteProject = async (projectId) => { const response = await apiClient.delete(`/portfolio/projects/${projectId}`); setPortfolio(response.data.portfolio); return response.data; };
+  const categories = data?.skills?.technical?.categories || [];
+  const saveCategories = (next) => saveData({ ...data, skills: { ...data.skills, technical: { ...data.skills.technical, categories: next } } });
+  const addSkill = (skill) => saveCategories([...categories, skill]);
+  const updateSkill = (index, skill) => saveCategories(categories.map((item, position) => position === index ? skill : item));
+  const deleteSkill = (index) => saveCategories(categories.filter((_, position) => position !== index));
+  const updateHeroStats = (heroStats) => saveData({ ...data, heroStats });
+  const resetData = async () => { await apiClient.delete('/portfolio', { headers: { 'X-Confirm-Reset': 'RESET_PORTFOLIO' } }); return fetchData(); };
 
-  const addExperience = async (item) => {
-    const newData = {
-      ...data,
-      experience: [...(data.experience || []), item]
-    };
+  const value = useMemo(() => ({
+    data, loading: portfolioQuery.isPending, error: portfolioQuery.error?.message || null,
+    isAuthenticated, user, authLoading, login, logout, refreshSession, fetchData, saveData, updatePersonal,
+    addExperience, updateExperience, deleteExperience, addProject, updateProject, deleteProject,
+    addSkill, updateSkill, deleteSkill, updateHeroStats, resetData
+  }), [data, portfolioQuery.isPending, portfolioQuery.error, isAuthenticated, user, authLoading, refreshSession]);
 
-    return saveData(newData);
-  };
-
-  const updateExperience = async (index, item) => {
-    const newExperience = (data.experience || []).map((exp, i) =>
-      i === index ? item : exp
-    );
-
-    return saveData({
-      ...data,
-      experience: newExperience
-    });
-  };
-
-  const deleteExperience = async (index) => {
-    const newExperience = (data.experience || []).filter(
-      (_, i) => i !== index
-    );
-
-    return saveData({
-      ...data,
-      experience: newExperience
-    });
-  };
-
-  /* =========================
-     PROJECTS
-     Uses MongoDB subdocument _id
-     ========================= */
-
-  const addProject = async (project) => {
-    try {
-      const response = await axios.post(
-        `${API_URL}/projects`,
-        project,
-        { headers: getAuthHeaders() }
-      );
-
-      setData(response.data.portfolio);
-      localStorage.setItem(
-        'portfolioData',
-        JSON.stringify(response.data.portfolio)
-      );
-
-      return response.data.project;
-    } catch (err) {
-      console.error('Error adding project:', err);
-      throw err;
-    }
-  };
-
-  const updateProject = async (projectId, project) => {
-    try {
-      const response = await axios.put(
-        `${API_URL}/projects/${projectId}`,
-        project,
-        { headers: getAuthHeaders() }
-      );
-
-      setData(response.data.portfolio);
-      localStorage.setItem(
-        'portfolioData',
-        JSON.stringify(response.data.portfolio)
-      );
-
-      return response.data.project;
-    } catch (err) {
-      console.error('Error updating project:', err);
-      throw err;
-    }
-  };
-
-  const deleteProject = async (projectId) => {
-    try {
-      const response = await axios.delete(
-        `${API_URL}/projects/${projectId}`,
-        { headers: getAuthHeaders() }
-      );
-
-      setData(response.data.portfolio);
-      localStorage.setItem(
-        'portfolioData',
-        JSON.stringify(response.data.portfolio)
-      );
-
-      return response.data;
-    } catch (err) {
-      console.error('Error deleting project:', err);
-      throw err;
-    }
-  };
-
-  /* =========================
-     SKILLS
-     ========================= */
-
-  const addSkill = async (skill) => {
-    const categories = data?.skills?.technical?.categories || [];
-
-    return saveData({
-      ...data,
-      skills: {
-        ...data.skills,
-        technical: {
-          ...data.skills.technical,
-          categories: [...categories, skill]
-        }
-      }
-    });
-  };
-
-  const updateSkill = async (index, skill) => {
-    const categories = data?.skills?.technical?.categories || [];
-
-    const newCategories = categories.map((item, i) =>
-      i === index ? skill : item
-    );
-
-    return saveData({
-      ...data,
-      skills: {
-        ...data.skills,
-        technical: {
-          ...data.skills.technical,
-          categories: newCategories
-        }
-      }
-    });
-  };
-
-  const deleteSkill = async (index) => {
-    const categories = data?.skills?.technical?.categories || [];
-
-    const newCategories = categories.filter((_, i) => i !== index);
-
-    return saveData({
-      ...data,
-      skills: {
-        ...data.skills,
-        technical: {
-          ...data.skills.technical,
-          categories: newCategories
-        }
-      }
-    });
-  };
-
-  const updateHeroStats = async (stats) => {
-    return saveData({
-      ...data,
-      heroStats: stats
-    });
-  };
-
-  const resetData = async () => {
-    try {
-      await axios.delete(API_URL, {
-        headers: getAuthHeaders()
-      });
-
-      return fetchData();
-    } catch (err) {
-      console.error('Error resetting data:', err);
-      throw err;
-    }
-  };
-
-  const value = {
-    data,
-    loading,
-    error,
-
-    isAuthenticated,
-    user,
-    authLoading,
-
-    login,
-    logout,
-
-    fetchData,
-    saveData,
-    updatePersonal,
-
-    addExperience,
-    updateExperience,
-    deleteExperience,
-
-    addProject,
-    updateProject,
-    deleteProject,
-
-    addSkill,
-    updateSkill,
-    deleteSkill,
-
-    updateHeroStats,
-    resetData
-  };
-
-  return (
-    <DataContext.Provider value={value}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };

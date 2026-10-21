@@ -114,7 +114,7 @@ const PortfolioSchema = new mongoose.Schema({
       label: String
     }
   ]
-});
+}, { timestamps: true, optimisticConcurrency: true });
 
 module.exports =
   mongoose.model('Portfolio', PortfolioSchema);

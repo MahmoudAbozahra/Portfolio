@@ -1,6 +1,7 @@
 import React from 'react';
 import { useData } from '../../contexts/DataContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import AnimatedSection from '../motion/AnimatedSection';
 
 const Experience = () => {
   const { data } = useData();
@@ -8,12 +9,12 @@ const Experience = () => {
 
   return (
     <section className="section" id="experience">
-      <div className="section-head">
+      <AnimatedSection className="section-head">
         <h2>{t('experience')}</h2>
-      </div>
+      </AnimatedSection>
 
       {data.experience.map((exp, index) => (
-        <article className="panel timeline-card" key={index}>
+        <AnimatedSection as="article" className="panel timeline-card" delay={index * .08} key={index}>
           <div className="timeline-header">
             <div>
               <h3>{exp.title}</h3>
@@ -26,7 +27,7 @@ const Experience = () => {
               <li key={i} style={{ listStyle: 'disc' }}>{item}</li>
             ))}
           </ul>
-        </article>
+        </AnimatedSection>
       ))}
     </section>
   );

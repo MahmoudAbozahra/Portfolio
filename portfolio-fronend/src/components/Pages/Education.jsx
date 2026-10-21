@@ -2,6 +2,7 @@ import React from 'react';
 import { useData } from '../../contexts/DataContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { FaGraduationCap, FaCertificate, FaLanguage } from 'react-icons/fa';
+import AnimatedSection from '../motion/AnimatedSection';
 
 const Education = () => {
   const { data } = useData();
@@ -10,12 +11,12 @@ const Education = () => {
 
   return (
     <section className="section" id="education">
-      <div className="section-head">
+      <AnimatedSection className="section-head">
         <p className="section-kicker">{t('educationKicker')}</p>
         <h2>{t('educationTitle')}</h2>
-      </div>
+      </AnimatedSection>
 
-      <div className="education-wrapper">
+      <AnimatedSection className="education-wrapper" variant="soft">
         <div className="panel education-card">
           <div className="education-icon">
             <FaGraduationCap />
@@ -54,7 +55,7 @@ const Education = () => {
             </div>
           </div>
         </div>
-      </div>
+      </AnimatedSection>
     </section>
   );
 };

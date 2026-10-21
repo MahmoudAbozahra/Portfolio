@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { DataProvider, useData } from './contexts/DataContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import Header from './components/Layout/Header';
@@ -10,66 +11,52 @@ import Projects from './components/Pages/Projects';
 import Skills from './components/Pages/Skills';
 import Education from './components/Pages/Education';
 import Contact from './components/Pages/Contact';
-import AdminPanel from './components/Admin/AdminPanel';
-import AdminLogin from './components/Admin/AdminLogin';
-import './App.css';
+import AuroraBackground from './components/motion/AuroraBackground';
+
+const AdminPanel = React.lazy(() => import('./components/Admin/AdminPanel'));
+const AdminLogin = React.lazy(() => import('./components/Admin/AdminLogin'));
+
+const PublicPortfolio = () => <><Home /><About /><Experience /><Projects /><Skills /><Education /><Contact /></>;
 
 function AppContent() {
-  const { loading, data, isAuthenticated } = useData();
+  const { loading, data, error, isAuthenticated, authLoading } = useData();
   const { t } = useLanguage();
-  const [showAdmin, setShowAdmin] = React.useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const inAdmin = location.pathname.startsWith('/admin');
 
   if (loading || !data) {
     return (
-      <div className="app">
-        <Header setShowAdmin={() => {}} showAdmin={false} />
-        <main className="main-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-            <h2>{t('loadingPortfolio')}</h2>
-            <p style={{ color: '#767676' }}>{t('loadingPortfolioHint')}</p>
-          </div>
-        </main>
-        <Footer />
+      <div className="app loading-screen">
+        <AuroraBackground />
+        <div className="loading-mark" aria-hidden="true">MA</div>
+        <h1>{t('loadingPortfolio')}</h1>
+        <p>{error || t('loadingPortfolioHint')}</p>
       </div>
     );
   }
 
   return (
-    <div className="app">
-      <Header setShowAdmin={setShowAdmin} showAdmin={showAdmin} />
+    <div className={`app ${inAdmin ? 'admin-mode' : ''}`}>
+      {!inAdmin && <AuroraBackground />}
+      {!inAdmin && <Header showAdmin={false} setShowAdmin={(show) => navigate(show ? '/admin' : '/')} />}
+      {error && <div className="connection-notice" role="status">Unable to refresh data. Showing the latest available view.</div>}
       <main className="main-content">
-        {showAdmin ? (
-          isAuthenticated ? (
-            <AdminPanel setShowAdmin={setShowAdmin} />
-          ) : (
-            <AdminLogin setIsAdmin={() => {}} setShowAdmin={setShowAdmin} />
-          )
-        ) : (
-          <>
-            <Home />
-            <About />
-            <Experience />
-            <Projects />
-            <Skills />
-            <Education />
-            <Contact />
-          </>
-        )}
+        <Routes>
+          <Route path="/" element={<PublicPortfolio />} />
+          <Route path="/admin" element={<React.Suspense fallback={<div className="section">{t('loading')}</div>}>{authLoading ? <div className="section">{t('loading')}</div> : isAuthenticated ? <AdminPanel setShowAdmin={() => navigate('/')} /> : <AdminLogin setIsAdmin={() => {}} setShowAdmin={(show) => !show && navigate('/')} />}</React.Suspense>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
-      <Footer />
+      {!inAdmin && <Footer />}
     </div>
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <LanguageProvider>
-      <DataProvider>
-        <AppContent />
-      </DataProvider>
-    </LanguageProvider>
+    <BrowserRouter>
+      <LanguageProvider><DataProvider><AppContent /></DataProvider></LanguageProvider>
+    </BrowserRouter>
   );
 }
-
-export default App;

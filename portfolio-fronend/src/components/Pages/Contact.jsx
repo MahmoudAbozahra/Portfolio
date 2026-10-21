@@ -1,60 +1,21 @@
 import React from 'react';
+import { FaArrowRight, FaFileArrowDown, FaGithub, FaLinkedin } from 'react-icons/fa6';
 import { useData } from '../../contexts/DataContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import AnimatedSection from '../motion/AnimatedSection';
+import TiltCard from '../motion/TiltCard';
 
 const Contact = () => {
   const { data } = useData();
   const { t } = useLanguage();
   const { personal } = data;
-
   return (
-    <section className="section contact-section section-alt" id="contact">
-      <div className="section-head center">
-        <p className="section-kicker">{t('contact')}</p>
-        <h2>{t('contactTitle')}</h2>
-      </div>
-
-      <div className="contact-wrapper">
-        {/* معلومات الاتصال (بدون أيقونات منفصلة للإيميل) */}
-        <div className="contact-cards-grid">
-          <a href={`mailto:${personal.email}`} className="contact-card-link">
-            <div className="contact-mini-card">
-              <span className="contact-mini-label">{t('email')}</span>
-              <span className="contact-mini-value">{personal.email}</span>
-            </div>
-          </a>
-          <a href={`tel:${personal.phone}`} className="contact-card-link">
-            <div className="contact-mini-card">
-              <span className="contact-mini-label">{t('phone')}</span>
-              <span className="contact-mini-value">{personal.phone}</span>
-            </div>
-          </a>
-          <div className="contact-card-link">
-            <div className="contact-mini-card">
-              <span className="contact-mini-label">{t('location')}</span>
-              <span className="contact-mini-value">{personal.location}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* رسالة التوفر */}
-        <div className="panel contact-message-card">
-          <p>{personal.availability}</p>
-        </div>
-
-        {/* أزرار التواصل الاجتماعي (GitHub و LinkedIn فقط) */}
-        <div className="panel contact-social-card">
-          <div className="contact-actions">
-            <a href={personal.github} target="_blank" rel="noreferrer" className="contact-btn github">
-              <FaGithub /> GitHub
-            </a>
-            <a href={personal.linkedin} target="_blank" rel="noreferrer" className="contact-btn linkedin">
-              <FaLinkedin /> LinkedIn
-            </a>
-          </div>
-        </div>
-      </div>
+    <section className="section contact-section" id="contact">
+      <AnimatedSection className="section-head contact-heading"><p className="section-kicker">{t('contact')}</p><h2>{t('contactHeadline')}</h2><p>{t('contactSupport')}</p></AnimatedSection>
+      <AnimatedSection variant="soft"><TiltCard className="contact-panel glass-card">
+        <div className="contact-primary"><span className="availability-dot" /><p>{personal.availability}</p><a className="button primary" href={`mailto:${personal.email}`}>{t('sendEmail')} <FaArrowRight /></a></div>
+        <div className="contact-details"><div><small>{t('email')}</small><a href={`mailto:${personal.email}`}>{personal.email}</a></div><div><small>{t('phone')}</small><a href={`tel:${personal.phone}`}>{personal.phone}</a></div><div><small>{t('location')}</small><span>{personal.location}</span></div><div className="contact-inline-actions"><a href={personal.resumeUrl} target="_blank" rel="noreferrer"><FaFileArrowDown /> {t('viewResume')}</a><a href={personal.github} target="_blank" rel="noreferrer"><FaGithub /> GitHub</a><a href={personal.linkedin} target="_blank" rel="noreferrer"><FaLinkedin /> LinkedIn</a></div></div>
+      </TiltCard></AnimatedSection>
     </section>
   );
 };

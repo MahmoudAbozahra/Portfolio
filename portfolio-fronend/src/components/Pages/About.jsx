@@ -1,47 +1,21 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { useData } from '../../contexts/DataContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import AnimatedSection from '../motion/AnimatedSection';
+import StaggerContainer, { staggerItem } from '../motion/StaggerContainer';
 
 const About = () => {
-  const { data, loading } = useData();
+  const { data } = useData();
   const { t } = useLanguage();
-
-  if (loading || !data) {
-    return (
-      <section id="about" className="section">
-        <div className="section-head">
-          <p className="section-kicker">{t('profile')}</p>
-          <h2>{t('loading')}</h2>
-        </div>
-      </section>
-    );
-  }
-
-  const { personal } = data;
-  const keyStrengths = personal.keyStrengths || [];
-
+  const strengths = data.personal?.keyStrengths || [];
+  const stats = data.heroStats || [];
   return (
-    <section id="about" className="section">
-      <div className="section-head">
-        <h2>{t('profile')}</h2>
-      </div>
-
-      <div className="panel soft-panel about-card">
-        <p>{personal.summary}</p>
-
-        {keyStrengths.length > 0 && (
-          <div className="about-strengths">
-            <p className="about-strengths-title">
-              <strong>{t('keyStrengths')}</strong>
-            </p>
-
-            <ul className="about-strengths-list">
-              {keyStrengths.map((strength, index) => (
-                <li key={index}>{strength}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+    <section id="about" className="section about-section">
+      <AnimatedSection className="section-head split-head"><div><p className="section-kicker">Working profile</p><h2>{t('profile')}</h2></div><p>I build backend-led products where business workflows, databases, interfaces, and physical systems need to work as one dependable whole.</p></AnimatedSection>
+      <div className="about-editorial">
+        <StaggerContainer className="strength-list" as="ul">{strengths.map((strength, index) => <motion.li variants={staggerItem} key={strength}><span>{String(index + 1).padStart(2, '0')}</span><strong>{strength}</strong></motion.li>)}</StaggerContainer>
+        <AnimatedSection className="impact-panel glass-card" variant="soft"><p className="section-kicker">At a glance</p><div className="impact-grid">{stats.map((stat) => <div key={`${stat.value}-${stat.label}`}><strong>{stat.value}</strong><span>{stat.label}</span></div>)}</div></AnimatedSection>
       </div>
     </section>
   );

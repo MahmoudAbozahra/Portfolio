@@ -1,8 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useData } from '../../contexts/DataContext';
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import apiClient, { resolveMediaUrl } from '../../lib/apiClient';
 const PersonalInfoManager = () => {
   const { data, updatePersonal } = useData();
   const [formData, setFormData] = useState(data?.personal || {});
@@ -32,11 +30,9 @@ const PersonalInfoManager = () => {
     formDataUpload.append('avatar', file);
     try {
       setUploading(true);
-      const token = localStorage.getItem('adminToken');
-      const res = await axios.post(`${API_BASE_URL}/api/upload/avatar`, formDataUpload, {
+      const res = await apiClient.post('/upload/avatar', formDataUpload, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'multipart/form-data'
         }
       });
       if (res.data.success) {
@@ -165,11 +161,11 @@ const PersonalInfoManager = () => {
           {formData.avatar && (
             <div style={{ marginTop: '0.5rem' }}>
               <img
-                src={`${API_BASE_URL}${formData.avatar}`}
+                src={resolveMediaUrl(formData.avatar)}
                 alt="Avatar preview"
                 style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #ddd' }}
                 onError={(e) => {
-                  e.target.src = 'https://ui-avatars.com/api/?name=Mahmoud+Abozahra&size=80&background=1a1a1a&color=fff';
+                  e.currentTarget.hidden = true;
                 }}
               />
             </div>

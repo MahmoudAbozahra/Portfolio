@@ -8,45 +8,54 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     minlength: 3,
-    maxlength: 30
+    maxlength: 40
   },
   email: {
     type: String,
     required: true,
     unique: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
+    maxlength: 254
   },
   password: {
     type: String,
     required: true,
-    minlength: 6
+    minlength: 12,
+    select: false
   },
   role: {
     type: String,
     enum: ['admin', 'editor'],
-    default: 'admin'
+    default: 'editor',
+    required: true
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
+  active: {
+    type: Boolean,
+    default: true,
+    required: true
   },
-  lastLogin: {
-    type: Date
+  lastLogin: Date
+}, {
+  timestamps: true,
+  optimisticConcurrency: true,
+  toJSON: {
+    transform(doc, value) {
+      delete value.password;
+      delete value.__v;
+      return value;
+    }
   }
 });
 
-// تشفير كلمة المرور قبل الحفظ
-UserSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function hashPassword(next) {
   if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-// التحقق من كلمة المرور
-UserSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+UserSchema.methods.comparePassword = function comparePassword(candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.models.User || mongoose.model('User', UserSchema);

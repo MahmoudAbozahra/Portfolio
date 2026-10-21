@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const User = require('../models/User');
+const { validatePassword } = require('../src/modules/auth/auth.validation');
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ const upsertAdmin = async () => {
 
   const email = process.env.ADMIN_EMAIL.toLowerCase();
   const username = process.env.ADMIN_USERNAME || email;
-  const password = process.env.ADMIN_PASSWORD;
+  const password = validatePassword(process.env.ADMIN_PASSWORD, 'ADMIN_PASSWORD');
 
   await mongoose.connect(process.env.MONGODB_URI);
 
@@ -34,6 +35,7 @@ const upsertAdmin = async () => {
     existingAdmin.email = email;
     existingAdmin.password = password;
     existingAdmin.role = 'admin';
+    existingAdmin.active = true;
 
     await existingAdmin.save();
 
@@ -45,7 +47,8 @@ const upsertAdmin = async () => {
     username,
     email,
     password,
-    role: 'admin'
+    role: 'admin',
+    active: true
   });
 
   await admin.save();

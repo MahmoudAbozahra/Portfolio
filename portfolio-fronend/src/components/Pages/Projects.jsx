@@ -1,511 +1,103 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { FaArrowRight, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
 import { useData } from '../../contexts/DataContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaTimes,
-  FaExpand
-} from 'react-icons/fa';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-
-const SERVER_URL = `${API_BASE_URL}`;
+import { resolveMediaUrl } from '../../lib/apiClient';
+import Reveal from '../motion/Reveal';
+import TiltCard from '../motion/TiltCard';
+import SafeImage from '../common/SafeImage';
 
 const Projects = () => {
   const { data } = useData();
   const { t } = useLanguage();
-
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const reduceMotion = useReducedMotion();
+  const [filter, setFilter] = useState('All');
+  const [selected, setSelected] = useState(null);
   const [imageIndex, setImageIndex] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const closeButtonRef = useRef(null);
+  const dialogRef = useRef(null);
+  const openerRef = useRef(null);
+  const projects = data?.projects || [];
+  const tags = useMemo(() => ['All', ...new Set(projects.flatMap((project) => project.tags || []))].slice(0, 8), [projects]);
+  const visible = filter === 'All' ? projects : projects.filter((project) => project.tags?.includes(filter));
+  const images = selected?.images || [];
 
-  /*
-   * Separate touch refs for:
-   * 1) project slider
-   * 2) image slider
-   *
-   * This prevents an image swipe from accidentally changing the project.
-   */
-  const projectTouchStartX = useRef(null);
-  const projectTouchStartY = useRef(null);
-
-  const imageTouchStartX = useRef(null);
-  const imageTouchStartY = useRef(null);
-
-  const modalTouchStartX = useRef(null);
-  const modalTouchStartY = useRef(null);
-
-
-  const getImageSrc = (image) => {
-    if (!image) return '';
-
-    if (
-      image.startsWith('http://') ||
-      image.startsWith('https://') ||
-      image.startsWith('blob:') ||
-      image.startsWith('data:')
-    ) {
-      return image;
-    }
-
-    return `${SERVER_URL}${image}`;
-  };
-
-  if (!data || !data.projects || data.projects.length === 0) {
-    return (
-      <section className="section">
-        <div className="section-head center">
-          <p className="section-kicker">{t('projects')}</p>
-          <h2>{t('loading')}</h2>
-        </div>
-      </section>
-    );
-  }
-
-  const totalPages = data.projects.length;
-  const currentProject = data.projects[currentIndex];
-  const images = currentProject.images || [];
-  const modalImage = images[imageIndex];
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % totalPages);
+  const openProject = (project, event) => {
+    openerRef.current = event.currentTarget;
     setImageIndex(0);
+    setSelected(project);
+  };
+  const close = () => {
+    setSelected(null);
+    requestAnimationFrame(() => openerRef.current?.focus());
   };
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
-    setImageIndex(0);
-  };
-
-  const showNextImage = () => {
-    if (images.length > 1) {
-      setImageIndex((prev) => (prev + 1) % images.length);
-    }
-  };
-
-  const showPrevImage = () => {
-    if (images.length > 1) {
-      setImageIndex((prev) => (prev - 1 + images.length) % images.length);
-    }
-  };
-
-  const nextImage = (e) => {
-    e?.stopPropagation();
-    showNextImage();
-  };
-
-  const prevImage = (e) => {
-    e?.stopPropagation();
-    showPrevImage();
-  };
-
-  /* =========================
-     PROJECT SWIPE
-     ========================= */
-
-  const handleProjectTouchStart = (e) => {
-    if (!e.touches?.length) return;
-
-    projectTouchStartX.current = e.touches[0].clientX;
-    projectTouchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleProjectTouchEnd = (e) => {
-    if (
-      projectTouchStartX.current === null ||
-      projectTouchStartY.current === null ||
-      !e.changedTouches?.length
-    ) {
-      return;
-    }
-
-    const endX = e.changedTouches[0].clientX;
-    const endY = e.changedTouches[0].clientY;
-
-    const diffX = projectTouchStartX.current - endX;
-    const diffY = projectTouchStartY.current - endY;
-
-    projectTouchStartX.current = null;
-    projectTouchStartY.current = null;
-
-    /*
-     * Ignore vertical scrolling.
-     * Only trigger when the gesture is clearly horizontal.
-     */
-    const isHorizontalSwipe = Math.abs(diffX) > Math.abs(diffY);
-    const passedThreshold = Math.abs(diffX) >= 55;
-
-    if (!isHorizontalSwipe || !passedThreshold) return;
-
-    if (diffX > 0) {
-      nextSlide();
-    } else {
-      prevSlide();
-    }
-  };
-
-  /* =========================
-     IMAGE SWIPE
-     ========================= */
-
-  const handleImageTouchStart = (e) => {
-    /*
-     * Prevent the project slider from receiving this image swipe.
-     */
-    e.stopPropagation();
-
-    if (!e.touches?.length) return;
-
-    imageTouchStartX.current = e.touches[0].clientX;
-    imageTouchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleImageTouchEnd = (e) => {
-    e.stopPropagation();
-
-    if (
-      imageTouchStartX.current === null ||
-      imageTouchStartY.current === null ||
-      !e.changedTouches?.length
-    ) {
-      return;
-    }
-
-    const endX = e.changedTouches[0].clientX;
-    const endY = e.changedTouches[0].clientY;
-
-    const diffX = imageTouchStartX.current - endX;
-    const diffY = imageTouchStartY.current - endY;
-
-    imageTouchStartX.current = null;
-    imageTouchStartY.current = null;
-
-    if (images.length <= 1) return;
-
-    const isHorizontalSwipe = Math.abs(diffX) > Math.abs(diffY);
-    const passedThreshold = Math.abs(diffX) >= 35;
-
-    if (!isHorizontalSwipe || !passedThreshold) return;
-
-    if (diffX > 0) {
-      showNextImage();
-    } else {
-      showPrevImage();
-    }
-  };
-
-  /* =========================
-     MODAL SWIPE
-     ========================= */
-
-  const handleModalTouchStart = (e) => {
-    e.stopPropagation();
-
-    if (!e.touches?.length) return;
-
-    modalTouchStartX.current = e.touches[0].clientX;
-    modalTouchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleModalTouchEnd = (e) => {
-    e.stopPropagation();
-
-    if (
-      modalTouchStartX.current === null ||
-      modalTouchStartY.current === null ||
-      !e.changedTouches?.length
-    ) {
-      return;
-    }
-
-    const endX = e.changedTouches[0].clientX;
-    const endY = e.changedTouches[0].clientY;
-
-    const diffX = modalTouchStartX.current - endX;
-    const diffY = modalTouchStartY.current - endY;
-
-    modalTouchStartX.current = null;
-    modalTouchStartY.current = null;
-
-    if (images.length <= 1) return;
-
-    const isHorizontalSwipe = Math.abs(diffX) > Math.abs(diffY);
-    const passedThreshold = Math.abs(diffX) >= 45;
-
-    if (!isHorizontalSwipe || !passedThreshold) return;
-
-    if (diffX > 0) {
-      showNextImage();
-    } else {
-      showPrevImage();
-    }
-  };
-
-  const openModal = (index) => {
-    setImageIndex(index);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  /*
-   * Lock page scrolling while modal is open
-   * and restore the previous value afterwards.
-   */
   useEffect(() => {
-    if (!isModalOpen) return undefined;
-
+    if (!selected) return undefined;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') {
-        closeModal();
-      }
-
-      if (e.key === 'ArrowRight') {
-        showNextImage();
-      }
-
-      if (e.key === 'ArrowLeft') {
-        showPrevImage();
+    closeButtonRef.current?.focus();
+    const onKey = (event) => {
+      if (event.key === 'Escape') close();
+      if (event.key === 'ArrowRight' && images.length) setImageIndex((value) => (value + 1) % images.length);
+      if (event.key === 'ArrowLeft' && images.length) setImageIndex((value) => (value - 1 + images.length) % images.length);
+      if (event.key === 'Tab') {
+        const focusable = dialogRef.current?.querySelectorAll('button, a[href]');
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }
     };
-
-    window.addEventListener('keydown', handleEsc);
-
+    document.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleEsc);
+      document.removeEventListener('keydown', onKey);
     };
-  }, [isModalOpen, images.length]);
+  }, [selected, images.length]);
 
   return (
     <section className="section" id="projects">
-      <div className="section-head center">
-        <h2>{t('projects')}</h2>
+      <Reveal className="section-head split-head">
+        <div><p className="section-kicker">Selected work</p><h2>{t('projects')}</h2></div>
+        <p>Production systems spanning ERP workflows, service operations, and industrial automation.</p>
+      </Reveal>
+      <div className="project-filters" aria-label="Filter projects">
+        {tags.map((tag) => <button key={tag} className={filter === tag ? 'active' : ''} onClick={() => setFilter(tag)}>{tag}</button>)}
       </div>
-
-      <div
-        className="projects-slider-container"
-        onTouchStart={handleProjectTouchStart}
-        onTouchEnd={handleProjectTouchEnd}
-      >
-        <button
-          type="button"
-          className="slider-btn prev"
-          onClick={prevSlide}
-          aria-label={t('previousProject')}
-        >
-          <FaChevronLeft />
-        </button>
-
-        <div className="project-single-card">
-          <article className="panel project-card">
-            <div className="project-image-wrapper">
-              {images.length > 0 ? (
-                <div
-                  className="project-image-carousel"
-                  onTouchStart={handleImageTouchStart}
-                  onTouchEnd={handleImageTouchEnd}
-                >
-                  <div
-                    className="project-image"
-                    onClick={() => openModal(imageIndex)}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Open ${currentProject.title} image ${imageIndex + 1}`}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        openModal(imageIndex);
-                      }
-                    }}
-                  >
-                    <img
-                      src={getImageSrc(images[imageIndex])}
-                      alt={`${currentProject.title} - ${imageIndex + 1}`}
-                      draggable="false"
-                    />
-
-                    <div className="image-overlay">
-                      <FaExpand className="expand-icon" />
-                      <span>{t('clickToExpand')}</span>
-                    </div>
-                  </div>
-
-                  {images.length > 1 && (
-                    <>
-                      <button
-                        type="button"
-                        className="image-nav-btn prev"
-                        onClick={prevImage}
-                        aria-label={t('previousImage')}
-                      >
-                        <FaChevronLeft />
-                      </button>
-
-                      <button
-                        type="button"
-                        className="image-nav-btn next"
-                        onClick={nextImage}
-                        aria-label={t('nextImage')}
-                      >
-                        <FaChevronRight />
-                      </button>
-
-                      <div className="image-dots" aria-label="Project images">
-                        {images.map((_, idx) => (
-                          <button
-                            type="button"
-                            key={idx}
-                            className={`dot-image ${idx === imageIndex ? 'active' : ''}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setImageIndex(idx);
-                            }}
-                            aria-label={`View image ${idx + 1}`}
-                            aria-current={idx === imageIndex ? 'true' : undefined}
-                          />
-                        ))}
-                      </div>
-
-                      <div className="image-counter">
-                        {imageIndex + 1} / {images.length}
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="project-image-placeholder">
-                  <span>{t('noImagesUploaded')}</span>
-                </div>
-              )}
+      <div className="projects-grid">
+        {visible.map((project, index) => (
+          <Reveal className="project-card-shell" delay={index * 0.06} key={project._id || project.title}>
+          <TiltCard as="article" className="project-card glass-card">
+            <div className={`project-cover tone-${index % 3}`}>
+              {project.images?.[0] ? <SafeImage src={resolveMediaUrl(project.images[0])} alt={`${project.title} preview`} fallbackLabel="Project image unavailable" /> : <div className="system-map" aria-label="Conceptual system architecture"><span>Interface</span><i /><span>Services</span><i /><span>Data</span><small>Conceptual architecture</small></div>}
             </div>
-
-            <p className="card-label">{currentProject.type}</p>
-
-            <h3>{currentProject.title}</h3>
-
-            <p className="project-summary">
-              {currentProject.summary}
-            </p>
-
-            {Array.isArray(currentProject.details) &&
-              currentProject.details.length > 0 && (
-                <ul className="project-details">
-                  {currentProject.details.map((detail, index) => (
-                    <li key={index}>{detail}</li>
-                  ))}
-                </ul>
-              )}
-
-            {Array.isArray(currentProject.tags) &&
-              currentProject.tags.length > 0 && (
-                <div className="tag-row compact">
-                  {currentProject.tags.map((tag) => (
-                    <span key={tag} className="project-tag">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-          </article>
-        </div>
-
-        <button
-          type="button"
-          className="slider-btn next"
-          onClick={nextSlide}
-          aria-label={t('nextProject')}
-        >
-          <FaChevronRight />
-        </button>
+            <p className="card-label">{project.type}</p>
+            <h3>{project.title}</h3>
+            <p>{project.summary}</p>
+            <div className="tag-row">{project.tags?.slice(0, 5).map((tag) => <span key={tag}>{tag}</span>)}</div>
+            <button className="project-open" onClick={(event) => openProject(project, event)}>Explore case study <FaArrowRight /></button>
+          </TiltCard>
+          </Reveal>
+        ))}
       </div>
 
-      <div className="project-counter">
-        {currentIndex + 1} / {totalPages}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="slider-dots" aria-label="Projects">
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <button
-              type="button"
-              key={index}
-              className={`dot ${index === currentIndex ? 'active' : ''}`}
-              onClick={() => {
-                setCurrentIndex(index);
-                setImageIndex(0);
-              }}
-              aria-label={`View project ${index + 1}`}
-              aria-current={index === currentIndex ? 'true' : undefined}
-            />
-          ))}
-        </div>
-      )}
-
-      {isModalOpen && modalImage && (
-        <div
-          className="image-modal-overlay"
-          onClick={closeModal}
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('projectImagePreview')}
-        >
-          <div
-            className="image-modal-content"
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={handleModalTouchStart}
-            onTouchEnd={handleModalTouchEnd}
-          >
-            <button
-              type="button"
-              className="modal-close-btn"
-              onClick={closeModal}
-              aria-label={t('closeModal')}
-            >
-              <FaTimes />
-            </button>
-
-            {images.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  className="modal-nav-btn prev"
-                  onClick={prevImage}
-                  aria-label={t('previousFullImage')}
-                >
-                  <FaChevronLeft />
-                </button>
-
-                <button
-                  type="button"
-                  className="modal-nav-btn next"
-                  onClick={nextImage}
-                  aria-label={t('nextFullImage')}
-                >
-                  <FaChevronRight />
-                </button>
-
-                <div className="modal-image-counter">
-                  {imageIndex + 1} / {images.length}
-                </div>
-              </>
-            )}
-
-            <img
-              src={getImageSrc(modalImage)}
-              alt={`${currentProject.title} full view ${imageIndex + 1}`}
-              className="modal-image"
-              draggable="false"
-            />
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {selected && (
+          <motion.div className="project-dialog-backdrop" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => event.target === event.currentTarget && close()}>
+            <motion.div ref={dialogRef} className="project-dialog" role="dialog" aria-modal="true" aria-labelledby="project-dialog-title" initial={reduceMotion ? false : { opacity: 0, y: 26, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 18, scale: .98 }} transition={{ duration: .28 }}>
+              <button ref={closeButtonRef} className="dialog-close" onClick={close} aria-label={t('closeModal')}><FaTimes /></button>
+              <div className="dialog-media">
+                {images.length ? <SafeImage src={resolveMediaUrl(images[imageIndex])} alt={`${selected.title}, image ${imageIndex + 1}`} fallbackLabel="Project image unavailable" /> : <div className="system-map large"><span>Experience</span><i /><span>Domain services</span><i /><span>Infrastructure</span><small>Conceptual architecture · not a customer screenshot</small></div>}
+                {images.length > 1 && <><button className="dialog-nav prev" onClick={() => setImageIndex((value) => (value - 1 + images.length) % images.length)} aria-label={t('previousImage')}><FaChevronLeft /></button><button className="dialog-nav next" onClick={() => setImageIndex((value) => (value + 1) % images.length)} aria-label={t('nextImage')}><FaChevronRight /></button></>}
+              </div>
+              <div className="dialog-copy"><p className="card-label">{selected.type}</p><h2 id="project-dialog-title">{selected.title}</h2><p>{selected.summary}</p><ul>{selected.details?.map((detail) => <li key={detail}>{detail}</li>)}</ul><div className="tag-row">{selected.tags?.map((tag) => <span key={tag}>{tag}</span>)}</div></div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

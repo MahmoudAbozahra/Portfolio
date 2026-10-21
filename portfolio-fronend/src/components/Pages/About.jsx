@@ -12,10 +12,10 @@ const About = () => {
   const stats = data.heroStats || [];
   return (
     <section id="about" className="section about-section">
-      <AnimatedSection className="section-head split-head"><div><p className="section-kicker">Working profile</p><h2>{t('profile')}</h2></div><p>I build backend-led products where business workflows, databases, interfaces, and physical systems need to work as one dependable whole.</p></AnimatedSection>
-      <div className="about-editorial">
+      <AnimatedSection className="section-head"><p className="section-kicker">Working profile</p><h2>{t('profile')}</h2></AnimatedSection>
+      <div className={`about-editorial${stats.length ? '' : ' without-stats'}`}>
         <StaggerContainer className="strength-list" as="ul">{strengths.map((strength, index) => <motion.li variants={staggerItem} key={strength}><span>{String(index + 1).padStart(2, '0')}</span><strong>{strength}</strong></motion.li>)}</StaggerContainer>
-        <AnimatedSection className="impact-panel glass-card" variant="soft"><p className="section-kicker">At a glance</p><div className="impact-grid">{stats.map((stat) => <div key={`${stat.value}-${stat.label}`}><strong>{stat.value}</strong><span>{stat.label}</span></div>)}</div></AnimatedSection>
+        {stats.length > 0 && <AnimatedSection className="impact-panel glass-card" variant="soft"><p className="section-kicker">At a glance</p><div className="impact-grid">{stats.map((stat) => <div key={`${stat.value}-${stat.label}`}><strong>{stat.value}</strong><span>{stat.label}</span></div>)}</div></AnimatedSection>}
       </div>
     </section>
   );

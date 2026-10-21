@@ -1,0 +1,12 @@
+.aurora { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; background: linear-gradient(150deg, var(--color-ivory) 10%, rgba(234,215,195,.54) 58%, var(--color-ivory)); }
+.aurora-shape { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .42; will-change: transform; }
+.aurora-one { width: 55vw; height: 55vw; left: -16vw; top: -18vw; background: var(--color-sand); animation: aurora-one 26s ease-in-out infinite alternate; }
+.aurora-two { width: 48vw; height: 48vw; right: -18vw; top: 22vh; background: rgba(200,155,115,.5); animation: aurora-two 31s ease-in-out infinite alternate; }
+.aurora-three { width: 38vw; height: 38vw; left: 32vw; bottom: -22vw; background: rgba(121,80,51,.16); animation: aurora-three 22s ease-in-out infinite alternate; }
+@keyframes aurora-one { to { transform: translate3d(12vw, 9vh, 0) scale(1.08); } }
+@keyframes aurora-two { to { transform: translate3d(-13vw, -7vh, 0) scale(.92); } }
+@keyframes aurora-three { to { transform: translate3d(7vw, -10vh, 0) scale(1.12); } }
+.glass-card { position: relative; overflow: hidden; transition: transform .4s var(--ease-premium), box-shadow .4s var(--ease-premium), border-color .4s; }
+.glass-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.58), transparent 30%); opacity: .6; }
+@media (hover: hover) { .glass-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lifted); border-color: rgba(121,80,51,.24); } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } .aurora-shape { animation: none; } }

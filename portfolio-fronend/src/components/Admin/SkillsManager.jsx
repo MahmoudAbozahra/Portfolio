@@ -5,7 +5,7 @@ const SkillsManager = () => {
   const { data, addSkill, updateSkill, deleteSkill } = useData();
   const [editingIndex, setEditingIndex] = useState(null);
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     items: []
   });
   const [itemInput, setItemInput] = useState('');
@@ -14,14 +14,14 @@ const SkillsManager = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.title && formData.items.length > 0) {
+    if (formData.name && formData.items.length > 0) {
       if (editingIndex !== null) {
         updateSkill(editingIndex, formData);
         setEditingIndex(null);
       } else {
         addSkill(formData);
       }
-      setFormData({ title: '', items: [] });
+      setFormData({ name: '', items: [] });
       setItemInput('');
     }
   };
@@ -29,7 +29,7 @@ const SkillsManager = () => {
   const handleEdit = (index) => {
     const category = skillCategories[index];
     setFormData({
-      title: category.name || category.title || '',
+      name: category.name || category.title || '',
       items: category.items || []
     });
     setItemInput('');
@@ -37,7 +37,7 @@ const SkillsManager = () => {
   };
 
   const handleCancel = () => {
-    setFormData({ title: '', items: [] });
+    setFormData({ name: '', items: [] });
     setItemInput('');
     setEditingIndex(null);
   };
@@ -65,8 +65,8 @@ const SkillsManager = () => {
         <h3>{editingIndex !== null ? '✏️ Edit Skill Group' : '➕ Add New Skill Group'}</h3>
         <input
           type="text"
-          value={formData.title}
-          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          value={formData.name}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
           placeholder="Skill Group Title (e.g., Backend)"
           required
         />

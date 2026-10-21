@@ -1,0 +1,30 @@
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+body { margin: 0; background: var(--color-ivory); color: var(--color-espresso); font-family: Inter, "Segoe UI", Tahoma, Arial, sans-serif; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .045; z-index: 10; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E"); }
+button, input, textarea, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+a { color: inherit; }
+button { color: inherit; }
+:focus-visible { outline: 3px solid rgba(121,80,51,.42); outline-offset: 3px; }
+::selection { background: var(--color-sand); color: var(--color-espresso); }
+.app { min-height: 100vh; position: relative; isolation: isolate; overflow: clip; }
+.main-content { position: relative; z-index: 1; }
+.section { width: min(var(--max-width), calc(100% - 40px)); margin: 0 auto; padding: clamp(74px, 10vw, 128px) 0; }
+.section-alt { position: relative; }
+.section-head { margin-bottom: 38px; max-width: 780px; }
+.section-head.center { margin-inline: auto; text-align: center; }
+.section-head h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.3rem, 5vw, 4.7rem); line-height: 1.02; letter-spacing: -.045em; font-weight: 500; }
+.section-kicker, .card-label { margin: 0 0 10px; color: var(--color-wood); font-size: .74rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.split-head { display: grid; grid-template-columns: 1.2fr .8fr; gap: 48px; max-width: none; align-items: end; }
+.split-head > p { color: rgba(42,33,27,.7); max-width: 480px; margin: 0; }
+.glass-card, .panel, .skill-category, .contact-mini-card { background: var(--surface-glass); border: 1px solid var(--border-glass); box-shadow: var(--shadow-soft); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.panel { border-radius: var(--radius-md); padding: clamp(24px, 4vw, 42px); }
+.connection-notice { position: fixed; bottom: 20px; left: 50%; z-index: 50; transform: translateX(-50%); background: var(--color-espresso); color: white; padding: 10px 18px; border-radius: 999px; font-size: .84rem; }
+.loading-screen { display: grid; min-height: 100vh; place-content: center; text-align: center; padding: 24px; }
+.loading-mark { margin: auto; width: 70px; height: 70px; display: grid; place-items: center; border-radius: 22px; background: var(--color-wood); color: white; font-weight: 900; box-shadow: var(--shadow-lifted); }
+.loading-screen h1 { font-family: Georgia, serif; font-weight: 500; margin-bottom: 0; }
+.loading-screen p { color: rgba(42,33,27,.65); }
+[dir="rtl"] { font-family: Tahoma, Arial, sans-serif; }
+[dir="rtl"] .hero-copy, [dir="rtl"] .section-head { text-align: right; }
+@media (max-width: 760px) { .section { width: min(100% - 28px, var(--max-width)); padding: 70px 0; } .split-head { grid-template-columns: 1fr; gap: 16px; } }

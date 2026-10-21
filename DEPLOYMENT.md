@@ -1,4 +1,12 @@
-# Deployment Note for Vercel
+# Deployment
+
+The current production and security deployment guide is maintained in [`docs/deployment.md`](docs/deployment.md).
+
+Important: keep the Vercel root directory as `portfolio-fronend`, rotate credentials that may have appeared in the previously tracked Atlas environment file before deployment, and back up MongoDB plus `portfolio-backend/uploads/` together.
+
+<!-- Legacy notes retained below for historical context. -->
+
+# Legacy Vercel notes
 
 ## Local run
 

@@ -1,12 +1,11 @@
 import React, { useRef, useState } from 'react';
-import axios from 'axios';
+import apiClient, { resolveMediaUrl } from '../../lib/apiClient';
 import { FaTimes } from 'react-icons/fa';
 import { useData } from '../../contexts/DataContext';
+import SafeImage from '../common/SafeImage';
 
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-const UPLOAD_URL = `${API_BASE_URL}/api/upload`;
-const SERVER_URL = `${API_BASE_URL}`;
+const UPLOAD_URL = '/upload';
 
 const EMPTY_FORM = {
   title: '',
@@ -46,27 +45,7 @@ const ProjectsManager = () => {
 
   const projects = data?.projects || [];
 
-  const tokenHeaders = () => {
-    const token = localStorage.getItem('adminToken');
-
-    return token
-      ? { Authorization: `Bearer ${token}` }
-      : {};
-  };
-
-  const getImageSrc = (image) => {
-    if (!image) return '';
-
-    if (
-      image.startsWith('http://') ||
-      image.startsWith('https://') ||
-      image.startsWith('blob:')
-    ) {
-      return image;
-    }
-
-    return `${SERVER_URL}${image}`;
-  };
+  const getImageSrc = resolveMediaUrl;
 
   const clearPendingPreviews = () => {
     pendingPreviews.forEach((preview) => {
@@ -105,12 +84,11 @@ const ProjectsManager = () => {
     setUploading(true);
 
     try {
-      const response = await axios.post(
+      const response = await apiClient.post(
         `${UPLOAD_URL}/project/${projectId}/images`,
         body,
         {
           headers: {
-            ...tokenHeaders()
           }
         }
       );
@@ -271,11 +249,9 @@ const ProjectsManager = () => {
     }
 
     try {
-      await axios.delete(
+      await apiClient.delete(
         `${UPLOAD_URL}/project/${editingProjectId}/image/${imageIndex}`,
-        {
-          headers: tokenHeaders()
-        }
+        {}
       );
 
       setFormData((prev) => ({
@@ -639,7 +615,7 @@ const ProjectsManager = () => {
                     overflow: 'hidden'
                   }}
                 >
-                  <img
+                  <SafeImage
                     src={getImageSrc(image)}
                     alt={`Existing ${index + 1}`}
                     style={{
@@ -686,7 +662,7 @@ const ProjectsManager = () => {
                     overflow: 'hidden'
                   }}
                 >
-                  <img
+                  <SafeImage
                     src={preview}
                     alt={`Pending ${index + 1}`}
                     style={{
@@ -801,7 +777,7 @@ const ProjectsManager = () => {
                     {project.images
                       .slice(0, 3)
                       .map((image, index) => (
-                        <img
+                        <SafeImage
                           key={`${image}-${index}`}
                           src={getImageSrc(image)}
                           alt={`${project.title} ${index + 1}`}

@@ -15,9 +15,11 @@ const Projects = () => {
   const [filter, setFilter] = useState('All');
   const [selected, setSelected] = useState(null);
   const [imageIndex, setImageIndex] = useState(0);
+  const [previewIndices, setPreviewIndices] = useState({});
   const closeButtonRef = useRef(null);
   const dialogRef = useRef(null);
   const openerRef = useRef(null);
+  const swipeStartRef = useRef(null);
   const projects = data?.projects || [];
   const tags = useMemo(() => ['All', ...new Set(projects.flatMap((project) => project.tags || []))].slice(0, 8), [projects]);
   const visible = filter === 'All' ? projects : projects.filter((project) => project.tags?.includes(filter));
@@ -25,8 +27,22 @@ const Projects = () => {
 
   const openProject = (project, event) => {
     openerRef.current = event.currentTarget;
-    setImageIndex(0);
+    setImageIndex(previewIndices[project._id || project.title] || 0);
     setSelected(project);
+  };
+  const beginSwipe = (event) => {
+    const touch = event.touches[0];
+    if (touch) swipeStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+  const finishSwipe = (event, count, updateIndex) => {
+    const touch = event.changedTouches[0];
+    const start = swipeStartRef.current;
+    swipeStartRef.current = null;
+    if (!start || !touch || count < 2) return;
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
+    updateIndex((value) => (value + (dx < 0 ? 1 : -1) + count) % count);
   };
   const close = () => {
     setSelected(null);
@@ -72,7 +88,12 @@ const Projects = () => {
           <Reveal className="project-card-shell" delay={index * 0.06} key={project._id || project.title}>
           <TiltCard as="article" className="project-card glass-card">
             <div className={`project-cover tone-${index % 3}`}>
-              {project.images?.[0] ? <SafeImage src={resolveMediaUrl(project.images[0])} alt={`${project.title} preview`} fallbackLabel="Project image unavailable" /> : <div className="system-map" aria-label="Conceptual system architecture"><span>Interface</span><i /><span>Services</span><i /><span>Data</span><small>Conceptual architecture</small></div>}
+              {project.images?.length ? <>
+                <div className="project-preview-swipe" onTouchStart={beginSwipe} onTouchEnd={(event) => finishSwipe(event, project.images.length, (update) => setPreviewIndices((current) => ({ ...current, [project._id || project.title]: update(current[project._id || project.title] || 0) })))}>
+                  <SafeImage src={resolveMediaUrl(project.images[previewIndices[project._id || project.title] || 0])} alt={`${project.title} preview`} fallbackLabel="Project image unavailable" />
+                </div>
+                {project.images.length > 1 && <span className="project-image-count" aria-live="polite">{(previewIndices[project._id || project.title] || 0) + 1} / {project.images.length}</span>}
+              </> : <div className="system-map" aria-label="Conceptual system architecture"><span>Interface</span><i /><span>Services</span><i /><span>Data</span><small>Conceptual architecture</small></div>}
             </div>
             <p className="card-label">{project.type}</p>
             <h3>{project.title}</h3>
@@ -89,7 +110,7 @@ const Projects = () => {
           <motion.div className="project-dialog-backdrop" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => event.target === event.currentTarget && close()}>
             <motion.div ref={dialogRef} className="project-dialog" role="dialog" aria-modal="true" aria-labelledby="project-dialog-title" initial={reduceMotion ? false : { opacity: 0, y: 26, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 18, scale: .98 }} transition={{ duration: .28 }}>
               <button ref={closeButtonRef} className="dialog-close" onClick={close} aria-label={t('closeModal')}><FaTimes /></button>
-              <div className="dialog-media">
+              <div className="dialog-media" onTouchStart={beginSwipe} onTouchEnd={(event) => finishSwipe(event, images.length, setImageIndex)}>
                 {images.length ? <SafeImage src={resolveMediaUrl(images[imageIndex])} alt={`${selected.title}, image ${imageIndex + 1}`} fallbackLabel="Project image unavailable" /> : <div className="system-map large"><span>Experience</span><i /><span>Domain services</span><i /><span>Infrastructure</span><small>Conceptual architecture · not a customer screenshot</small></div>}
                 {images.length > 1 && <><button className="dialog-nav prev" onClick={() => setImageIndex((value) => (value - 1 + images.length) % images.length)} aria-label={t('previousImage')}><FaChevronLeft /></button><button className="dialog-nav next" onClick={() => setImageIndex((value) => (value + 1) % images.length)} aria-label={t('nextImage')}><FaChevronRight /></button></>}
               </div>

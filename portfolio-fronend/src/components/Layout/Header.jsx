@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { LayoutGroup, motion } from 'motion/react';
 import { FaBars, FaCog, FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -11,6 +11,21 @@ const Header = ({ setShowAdmin, showAdmin }) => {
   const [active, setActive] = useState('home');
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const menuToggleRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnOutsidePress = (event) => {
+      if (!menuToggleRef.current?.contains(event.target)) setOpen(false);
+    };
+    const closeOnEscape = (event) => { if (event.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', closeOnOutsidePress);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePress);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [open]);
 
   useEffect(() => {
     let frame;
@@ -51,7 +66,7 @@ const Header = ({ setShowAdmin, showAdmin }) => {
   return (
     <motion.header className={`site-header ${scrolled ? 'is-scrolled' : 'is-top'} ${showAdmin ? 'is-admin' : ''}`}>
       <button className="brand" onClick={() => showAdmin ? setShowAdmin(false) : scrollTo('home')} aria-label="Mahmoud Abozahra, home"><motion.span layout>MA</motion.span><motion.strong layout>Mahmoud Abozahra</motion.strong></button>
-      {!showAdmin && <button className="menu-toggle" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="primary-navigation" aria-label="Toggle navigation">{open ? <FaTimes /> : <FaBars />}</button>}
+      {!showAdmin && <button ref={menuToggleRef} className="menu-toggle" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="primary-navigation" aria-label="Toggle navigation">{open ? <FaTimes /> : <FaBars />}</button>}
       <LayoutGroup id="primary-nav"><nav id="primary-navigation" className={`nav-links ${open || showAdmin ? 'is-open' : ''}`} aria-label="Primary navigation">
         {!showAdmin && sections.map(([id, key]) => <a key={id} href={`#${id}`} className={active === id ? 'active' : ''} aria-current={active === id ? 'location' : undefined} onClick={(event) => { event.preventDefault(); scrollTo(id); }}>{active === id && <motion.span className="nav-active-indicator" layoutId="nav-active" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}<span>{t(key)}</span></a>)}
         {!showAdmin && <button type="button" className="language-toggle" onClick={toggleLanguage} title={t('languageName')}>{t('switchLanguage')}</button>}

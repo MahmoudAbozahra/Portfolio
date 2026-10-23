@@ -3,19 +3,78 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Mahmoud Mostafa Abozahra — backend and full-stack developer building production ERP, integration, and industrial automation systems."
-    />
+    <meta name="description" content="Mahmoud Mostafa Abozahra is a Python Backend Developer specializing in Django, REST APIs, ERP systems, industrial automation, and database optimization." />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta name="author" content="Mahmoud Mostafa Abozahra" />
     <meta name="theme-color" content="#FAF8F5" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="canonical" href="https://mahmoudabozahra.vercel.app/" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Mahmoud Mostafa Abozahra | Backend & Full Stack Developer" />
-    <meta property="og:description" content="Production ERP, integration, and industrial automation systems." />
+    <meta property="og:title" content="Mahmoud Mostafa Abozahra | Python Backend Developer" />
+    <meta property="og:description" content="Python Backend Developer specializing in Django, REST APIs, ERP systems, industrial automation, and database optimization." />
+    <meta property="og:url" content="https://mahmoudabozahra.vercel.app/" />
+    <meta property="og:site_name" content="Mahmoud Abozahra" />
     <meta name="twitter:card" content="summary" />
-    <title>Mahmoud Mostafa Abozahra | Backend & Full Stack Developer</title>
+    <meta name="twitter:title" content="Mahmoud Mostafa Abozahra | Python Backend Developer" />
+    <meta name="twitter:description" content="Python Backend Developer specializing in Django, REST APIs, ERP systems, industrial automation, and database optimization." />
+    <title>Mahmoud Mostafa Abozahra | Python Backend Developer</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "https://mahmoudabozahra.vercel.app/#person",
+            "name": "Mahmoud Mostafa Abozahra",
+            "alternateName": "Mahmoud Abozahra",
+            "jobTitle": "Python Backend Developer",
+            "url": "https://mahmoudabozahra.vercel.app/",
+            "image": "https://mahmoudabozahra.vercel.app/favicon-192x192.png",
+            "description": "Python Backend Developer specializing in Django, REST APIs, ERP systems, industrial automation, and database optimization.",
+            "sameAs": [
+              "https://github.com/MahmoudAbozahra",
+              "https://www.linkedin.com/in/mahmoud-abozahra-dev"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://mahmoudabozahra.vercel.app/#website",
+            "url": "https://mahmoudabozahra.vercel.app/",
+            "name": "Mahmoud Abozahra",
+            "alternateName": "Mahmoud Mostafa Abozahra",
+            "publisher": { "@id": "https://mahmoudabozahra.vercel.app/#person" }
+          }
+        ]
+      }
+    </script>
+    <script>
+      const robots = document.querySelector('meta[name="robots"]');
+      const canonical = document.querySelector('link[rel="canonical"]');
+      const path = location.pathname.replace(/\/+$/, '') || '/';
+      const isPreview = location.hostname.endsWith('.vercel.app') && location.hostname !== 'mahmoudabozahra.vercel.app';
+      const isAdmin = path === '/admin';
+      const isNotFound = path !== '/' && !isAdmin;
+      if (isPreview || isAdmin || isNotFound) {
+        robots?.setAttribute('content', 'noindex,nofollow');
+      }
+      if (isAdmin || isNotFound) {
+        canonical?.removeAttribute('href');
+        document.title = isAdmin ? 'Admin | Mahmoud Abozahra' : 'Page not found | Mahmoud Abozahra';
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main>
+        <h1>Mahmoud Mostafa Abozahra</h1>
+        <p>Python Backend Developer specializing in Django, REST APIs, ERP systems, industrial automation, and database optimization.</p>
+        <p><a href="https://github.com/MahmoudAbozahra">GitHub</a> · <a href="https://www.linkedin.com/in/mahmoud-abozahra-dev">LinkedIn</a></p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

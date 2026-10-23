@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient, { setCsrfToken } from '../lib/apiClient';
+import { initialData } from '../data/initialData';
 
 const DataContext = createContext(null);
 const portfolioKey = ['portfolio'];
@@ -17,7 +18,12 @@ export const DataProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const sessionRefreshStarted = useRef(false);
-  const portfolioQuery = useQuery({ queryKey: portfolioKey, queryFn: async () => (await apiClient.get('/portfolio')).data });
+  const portfolioQuery = useQuery({
+    queryKey: portfolioKey,
+    queryFn: async () => (await apiClient.get('/portfolio')).data,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true
+  });
 
   const clearSession = useCallback(() => {
     setCsrfToken(null);
@@ -70,7 +76,8 @@ export const DataProvider = ({ children }) => {
   const saveData = async (newData) => { const { data } = await apiClient.put('/portfolio', newData); setPortfolio(data); return data; };
   const updatePersonal = async (personalData) => { const { data } = await apiClient.put('/portfolio/personal', personalData); setPortfolio(data); return data; };
 
-  const data = portfolioQuery.data;
+  const data = portfolioQuery.data ?? (portfolioQuery.isError ? initialData : null);
+  const usingFallback = !portfolioQuery.data && portfolioQuery.isError;
   const replaceArray = (field, items) => saveData({ ...data, [field]: items });
   const addExperience = (item) => replaceArray('experience', [...(data.experience || []), item]);
   const updateExperience = (index, item) => replaceArray('experience', data.experience.map((value, position) => position === index ? item : value));
@@ -87,11 +94,11 @@ export const DataProvider = ({ children }) => {
   const resetData = async () => { await apiClient.delete('/portfolio', { headers: { 'X-Confirm-Reset': 'RESET_PORTFOLIO' } }); return fetchData(); };
 
   const value = useMemo(() => ({
-    data, loading: portfolioQuery.isPending, error: portfolioQuery.error?.message || null,
+    data, loading: portfolioQuery.isPending && !portfolioQuery.isError, error: portfolioQuery.error?.message || null, usingFallback,
     isAuthenticated, user, authLoading, login, logout, refreshSession, fetchData, saveData, updatePersonal,
     addExperience, updateExperience, deleteExperience, addProject, updateProject, deleteProject,
     addSkill, updateSkill, deleteSkill, updateHeroStats, resetData
-  }), [data, portfolioQuery.isPending, portfolioQuery.error, isAuthenticated, user, authLoading, refreshSession]);
+  }), [data, portfolioQuery.isPending, portfolioQuery.isError, portfolioQuery.error, usingFallback, isAuthenticated, user, authLoading, refreshSession]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { DataProvider, useData } from './contexts/DataContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import Header from './components/Layout/Header';
@@ -75,6 +76,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <LanguageProvider><DataProvider><AppContent /></DataProvider></LanguageProvider>
+      <Analytics />
     </BrowserRouter>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { LayoutGroup, motion } from 'motion/react';
-import { FaBars, FaCog, FaTimes } from 'react-icons/fa';
+import { FaBars, FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../../contexts/LanguageContext';
 import ScrollProgress from '../motion/ScrollProgress';
 
@@ -70,7 +70,6 @@ const Header = ({ setShowAdmin, showAdmin }) => {
       <LayoutGroup id="primary-nav"><nav id="primary-navigation" className={`nav-links ${open || showAdmin ? 'is-open' : ''}`} aria-label="Primary navigation">
         {!showAdmin && sections.map(([id, key]) => <a key={id} href={`#${id}`} className={active === id ? 'active' : ''} aria-current={active === id ? 'location' : undefined} onClick={(event) => { event.preventDefault(); scrollTo(id); }}>{active === id && <motion.span className="nav-active-indicator" layoutId="nav-active" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}<span>{t(key)}</span></a>)}
         {!showAdmin && <button type="button" className="language-toggle" onClick={toggleLanguage} title={t('languageName')}>{t('switchLanguage')}</button>}
-        <button type="button" className="admin-link" onClick={() => setShowAdmin(!showAdmin)} title={showAdmin ? t('closeAdmin') : t('openAdmin')}><FaCog /><span>{showAdmin ? t('closeAdmin') : 'Admin'}</span></button>
       </nav></LayoutGroup>
       {!showAdmin && <ScrollProgress />}
     </motion.header>

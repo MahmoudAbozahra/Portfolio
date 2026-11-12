@@ -22,3 +22,9 @@ test('navigation updates the URL hash while preserving anchor behavior', async (
   expect(window.location.hash).toBe('#projects');
   target.remove();
 });
+
+test('does not expose an admin link in the public navigation', () => {
+  render(<LanguageProvider><Header showAdmin={false} setShowAdmin={() => {}} /></LanguageProvider>);
+  expect(screen.queryByRole('button', { name: /admin/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /admin/i })).not.toBeInTheDocument();
+});

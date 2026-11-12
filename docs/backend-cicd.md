@@ -200,9 +200,9 @@ curl -f http://127.0.0.1:5000/api/health
 بدل ذلك، الـ backend ينشئ أول admin من environment variables:
 
 ```bash
-ADMIN_USERNAME=admin@gmail.com
-ADMIN_EMAIL=admin@gmail.com
-ADMIN_PASSWORD=<your-secure-password>
+ADMIN_USERNAME=<your-admin-username>
+ADMIN_EMAIL=<your-admin-email>
+ADMIN_PASSWORD=<your-strong-unique-password>
 JWT_SECRET=<long-random-secret>
 MONGODB_URI=<your-mongodb-uri>
 ```

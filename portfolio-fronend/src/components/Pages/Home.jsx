@@ -7,6 +7,8 @@ import { resolveMediaUrl } from '../../lib/apiClient';
 import AnimatedSection from '../motion/AnimatedSection';
 import RevealText from '../motion/RevealText';
 
+const defaultHeroHeadline = 'Building reliable enterprise applications, ERP platforms, and industrial automation systems with Python and Django.';
+
 const PortraitOrbit = ({ avatar, name, initials }) => {
   const reduceMotion = useReducedMotion();
   const stageRef = useRef(null);
@@ -59,7 +61,7 @@ const Home = () => {
   }, [reduceMotion, roles.length]);
 
   const initials = personal.name?.split(' ').map((part) => part[0]).slice(0, 2).join('');
-  const heroIntro = personal.headline || String(personal.summary || '').split(/(?<=[.!?])\s+/)[0] || personal.availability;
+  const heroIntro = personal.headline || defaultHeroHeadline;
 
   return (
     <section className="hero-section" id="home">

@@ -2,7 +2,7 @@ module.exports = {
   personal: {
     name: 'Mahmoud Mostafa Abozahra',
     title: 'Python Backend Developer | Django & REST APIs',
-    headline: 'Building reliable enterprise applications, ERP platforms, and industrial automation systems with Python, Django, and Django REST Framework.',
+    headline: 'Building reliable enterprise applications, ERP platforms, and industrial automation systems with Python and Django.',
     email: 'mahmoudabozahra1998@gmail.com',
     phone: '01223517700',
     location: 'Cairo, Egypt',

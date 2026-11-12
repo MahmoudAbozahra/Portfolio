@@ -23,6 +23,7 @@ const Education = () => {
           </div>
           <div className="education-content">
             <h3>{education.degree}</h3>
+            {education.institution && <p className="education-institution">{education.institution}</p>}
             <p className="education-year">{education.year}</p>
             <p className="education-detail">{education.grade}</p>
             <p className="education-detail" style={{ color: 'inherit' }}>{education.project}</p> {/* إزالة اللون الأزرق */}

@@ -136,6 +136,28 @@ test('portfolio DTO drops unsupported mass-assignment fields', () => {
   assert.deepEqual(Object.keys(result), ['heroStats']);
 });
 
+test('portfolio DTO accepts the hero headline, institution and a repository-hosted resume path', () => {
+  const { sanitizePortfolio } = require('../src/modules/portfolio/portfolio.validation');
+  const result = sanitizePortfolio({
+    personal: { headline: 'Backend systems with Django.', resumeUrl: '/Mahmoud-Abozahra-Resume.pdf' },
+    education: { institution: 'Tanta University' }
+  });
+  assert.equal(result.personal.headline, 'Backend systems with Django.');
+  assert.equal(result.personal.resumeUrl, '/Mahmoud-Abozahra-Resume.pdf');
+  assert.equal(result.education.institution, 'Tanta University');
+});
+
+test('portfolio content sync preserves project identity, media and unmatched entries', () => {
+  const { mergeProjects } = require('../scripts/sync-portfolio-content');
+  const projects = mergeProjects([
+    { _id: 'existing-erp', title: 'Agricultural ERP Platform', images: ['/uploads/erp.png'], details: ['Old copy'] },
+    { _id: 'extra-project', title: 'Independent Project', images: [], details: ['Keep me'] }
+  ]);
+  assert.equal(projects[0]._id, 'existing-erp');
+  assert.deepEqual(projects[0].images, ['/uploads/erp.png']);
+  assert.equal(projects.at(-1).title, 'Independent Project');
+});
+
 test('GET portfolio fallback is read-only when the database is empty', async () => {
   const repository = require('../src/modules/portfolio/portfolio.repository');
   const service = require('../src/modules/portfolio/portfolio.service');

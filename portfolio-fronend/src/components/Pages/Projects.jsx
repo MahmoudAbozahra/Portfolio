@@ -8,6 +8,13 @@ import Reveal from '../motion/Reveal';
 import TiltCard from '../motion/TiltCard';
 import SafeImage from '../common/SafeImage';
 
+const detailPattern = /^(Contribution|Engineering approach|Outcome)\s*[—:-]\s*(.+)$/i;
+const parseDetail = (detail) => {
+  const match = String(detail).match(detailPattern);
+  return match ? { label: match[1], text: match[2] } : { label: 'Engineering work', text: detail };
+};
+const projectOutcome = (project) => (project.details || []).map(parseDetail).find((detail) => detail.label.toLowerCase() === 'outcome');
+
 const Projects = () => {
   const { data } = useData();
   const { t } = useLanguage();
@@ -98,6 +105,7 @@ const Projects = () => {
             <p className="card-label">{project.type}</p>
             <h3>{project.title}</h3>
             <p>{project.summary}</p>
+            {projectOutcome(project) && <p className="project-outcome"><strong>Verified result</strong>{projectOutcome(project).text}</p>}
             <div className="tag-row">{project.tags?.slice(0, 5).map((tag) => <span key={tag}>{tag}</span>)}</div>
             <button className="project-open" onClick={(event) => openProject(project, event)}>Explore case study <FaArrowRight /></button>
           </TiltCard>
@@ -114,7 +122,13 @@ const Projects = () => {
                 {images.length ? <SafeImage src={resolveMediaUrl(images[imageIndex])} alt={`${selected.title}, image ${imageIndex + 1}`} fallbackLabel="Project image unavailable" /> : <div className="system-map large"><span>Experience</span><i /><span>Domain services</span><i /><span>Infrastructure</span><small>Conceptual architecture · not a customer screenshot</small></div>}
                 {images.length > 1 && <><button className="dialog-nav prev" onClick={() => setImageIndex((value) => (value - 1 + images.length) % images.length)} aria-label={t('previousImage')}><FaChevronLeft /></button><button className="dialog-nav next" onClick={() => setImageIndex((value) => (value + 1) % images.length)} aria-label={t('nextImage')}><FaChevronRight /></button></>}
               </div>
-              <div className="dialog-copy"><p className="card-label">{selected.type}</p><h2 id="project-dialog-title">{selected.title}</h2><p>{selected.summary}</p><ul>{selected.details?.map((detail) => <li key={detail}>{detail}</li>)}</ul><div className="tag-row">{selected.tags?.map((tag) => <span key={tag}>{tag}</span>)}</div></div>
+              <div className="dialog-copy">
+                <p className="card-label">{selected.type}</p>
+                <h2 id="project-dialog-title">{selected.title}</h2>
+                <section className="case-study-block"><h3>Context</h3><p>{selected.summary}</p></section>
+                <div className="case-study-details">{selected.details?.map((detail) => { const parsed = parseDetail(detail); return <section className={parsed.label.toLowerCase() === 'outcome' ? 'case-study-block outcome' : 'case-study-block'} key={detail}><h3>{parsed.label}</h3><p>{parsed.text}</p></section>; })}</div>
+                <section className="case-study-block technologies"><h3>Technologies</h3><div className="tag-row">{selected.tags?.map((tag) => <span key={tag}>{tag}</span>)}</div></section>
+              </div>
             </motion.div>
           </motion.div>
         )}

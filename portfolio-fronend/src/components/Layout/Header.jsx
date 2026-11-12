@@ -7,7 +7,7 @@ import ScrollProgress from '../motion/ScrollProgress';
 const sections = [['about', 'navProfile'], ['experience', 'navExperience'], ['projects', 'navProjects'], ['skills', 'navSkills'], ['education', 'navEducation'], ['contact', 'navContact']];
 
 const Header = ({ setShowAdmin, showAdmin }) => {
-  const { t, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
   const [active, setActive] = useState('home');
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -69,7 +69,6 @@ const Header = ({ setShowAdmin, showAdmin }) => {
       {!showAdmin && <button ref={menuToggleRef} className="menu-toggle" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="primary-navigation" aria-label="Toggle navigation">{open ? <FaTimes /> : <FaBars />}</button>}
       <LayoutGroup id="primary-nav"><nav id="primary-navigation" className={`nav-links ${open || showAdmin ? 'is-open' : ''}`} aria-label="Primary navigation">
         {!showAdmin && sections.map(([id, key]) => <a key={id} href={`#${id}`} className={active === id ? 'active' : ''} aria-current={active === id ? 'location' : undefined} onClick={(event) => { event.preventDefault(); scrollTo(id); }}>{active === id && <motion.span className="nav-active-indicator" layoutId="nav-active" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}<span>{t(key)}</span></a>)}
-        {!showAdmin && <button type="button" className="language-toggle" onClick={toggleLanguage} title={t('languageName')}>{t('switchLanguage')}</button>}
       </nav></LayoutGroup>
       {!showAdmin && <ScrollProgress />}
     </motion.header>

@@ -59,7 +59,7 @@ const Home = () => {
   }, [reduceMotion, roles.length]);
 
   const initials = personal.name?.split(' ').map((part) => part[0]).slice(0, 2).join('');
-  const heroIntro = String(personal.summary || '').split(/(?<=[.!?])\s+/)[0] || personal.availability;
+  const heroIntro = personal.headline || String(personal.summary || '').split(/(?<=[.!?])\s+/)[0] || personal.availability;
 
   return (
     <section className="hero-section" id="home">

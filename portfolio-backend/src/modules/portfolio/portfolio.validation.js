@@ -22,7 +22,7 @@ const list = (value, maxItems = 50, maxLength = 500) => {
 
 const url = (value) => {
   const cleaned = text(value, 2048);
-  if (!cleaned || cleaned.startsWith('/uploads/')) return cleaned;
+  if (!cleaned || /^\/(?!\/)/.test(cleaned)) return cleaned;
   try {
     const parsed = new URL(cleaned);
     if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('protocol');
@@ -37,6 +37,7 @@ const sanitizePersonal = (value) => {
   return {
     name: text(value.name, 120),
     title: text(value.title, 120),
+    headline: text(value.headline, 600),
     email: text(value.email, 254),
     phone: text(value.phone, 40),
     location: text(value.location, 120),
@@ -103,7 +104,7 @@ const sanitizePortfolio = (value) => {
   if (value.education !== undefined) {
     assertObject(value.education, 'education');
     result.education = {
-      degree: text(value.education.degree, 240), year: text(value.education.year, 80), grade: text(value.education.grade, 160),
+      degree: text(value.education.degree, 240), institution: text(value.education.institution, 180), year: text(value.education.year, 80), grade: text(value.education.grade, 160),
       project: text(value.education.project, 500), training: text(value.education.training, 500)
     };
   }

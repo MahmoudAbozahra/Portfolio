@@ -98,6 +98,14 @@ const PersonalInfoManager = () => {
             placeholder="Job Title"
             required
           />
+          <textarea
+            name="headline"
+            value={formData.headline || ''}
+            onChange={handleChange}
+            placeholder="Hero headline"
+            rows="3"
+            style={{ gridColumn: '1 / -1' }}
+          />
           <input
             type="email"
             name="email"

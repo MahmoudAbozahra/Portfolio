@@ -76,6 +76,7 @@ const PortfolioSchema = new mongoose.Schema({
   personal: {
     name: String,
     title: String,
+    headline: String,
     email: String,
     phone: String,
     location: String,
@@ -102,6 +103,7 @@ const PortfolioSchema = new mongoose.Schema({
 
   education: {
     degree: String,
+    institution: String,
     year: String,
     grade: String,
     project: String,

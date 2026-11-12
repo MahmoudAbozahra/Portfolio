@@ -1,79 +1,77 @@
 module.exports = {
   personal: {
     name: 'Mahmoud Mostafa Abozahra',
-    title: 'Backend Developer',
+    title: 'Python Backend Developer | Django & REST APIs',
+    headline: 'Building reliable enterprise applications, ERP platforms, and industrial automation systems with Python, Django, and Django REST Framework.',
     email: 'mahmoudabozahra1998@gmail.com',
     phone: '01223517700',
     location: 'Cairo, Egypt',
     github: 'https://github.com/MahmoudAbozahra',
     linkedin: 'https://www.linkedin.com/in/mahmoud-abozahra-dev',
-    resumeUrl: 'https://drive.google.com/file/d/1E2jOEN02lUYvOxO6p-Y2LwQFN5xlFgpA/view?usp=sharing',
-    avatar: '', // سيتم رفعه من الادمن
-    availability: 'Available for backend work, ERP systems, integration-heavy systems, and production support roles.',
-    summary: 'Backend Developer with 1+ year of experience developing production-grade ERP and industrial automation systems using Python, Django, and Django REST Framework. Skilled in building scalable REST APIs, designing maintainable backend architectures, integrating Oracle and PostgreSQL databases, implementing asynchronous processing with Celery and Redis, and developing business-critical enterprise solutions with clean, efficient code.',
+    resumeUrl: 'https://drive.google.com/file/d/1aiTskz_drSLgHTnpz-_On9wk9zMu66hn/view?usp=drive_link',
+    avatar: '',
+    availability: 'Open to Python Backend Developer and Django Developer roles focused on reliable APIs, enterprise systems, and integrations.',
+    summary: 'Python Backend Developer experienced in building production Django/DRF systems for ERP, maintenance, and industrial operations. Skilled in complex business workflows, hardware-software integration, multi-tenant applications, Oracle database synchronization, Django ORM performance optimization, and automated backend testing with pytest.',
     keyStrengths: [
-      'Django REST Framework',
-      'PostgreSQL/Oracle integration',
-      'Celery for async tasks',
-      'Role-based access control (RBAC)',
-      'Production debugging and performance optimization'
+      'Django & REST API engineering',
+      'Enterprise workflows & service layers',
+      'Oracle & PostgreSQL data integration',
+      'pytest-driven backend quality',
+      'Industrial hardware integration'
     ]
   },
   experience: [
     {
       title: 'Full-Stack Developer',
       company: 'Millennium for Investment & Information Technology',
-      period: 'Apr 2025 – Present',
+      period: 'April 2025 – Present',
       details: [
-        'Developed and maintained production-grade backend systems using Django and Django REST Framework.',
-        'Designed and implemented scalable REST APIs and business-critical workflows for ERP and industrial management systems.',
-        'Built a fully automated vehicle weighing solution by integrating RFID, PLC, infrared sensors, barrier gates, traffic lights, dual-camera systems, and real-time backend services.',
-        'Designed secure authentication and Role-Based Access Control (RBAC).',
-        'Integrated Oracle and PostgreSQL databases with synchronization across multiple environments.',
-        'Developed asynchronous background services using Celery and Redis.',
-        'Refactored legacy modules and optimized database performance through efficient ORM queries and bulk operations.',
-        'Collaborated with cross-functional teams, containerized applications using Docker, and supported production deployments and troubleshooting.'
+        'Developed and maintained Django/DRF services and REST APIs for enterprise workflows, including authentication and role-based access control.',
+        'Integrated Oracle views with local databases and worked with PostgreSQL-backed systems.',
+        'Implemented asynchronous backend processing with Celery and Redis.',
+        'Built pytest and pytest-django coverage for service-layer logic, accounting integrity, ORM behavior, validation, integrations, regressions, and query efficiency.',
+        'Configured GitHub Actions CI to run automated backend tests across two projects.',
+        'Supported Docker deployments, production troubleshooting, and ORM performance improvements.'
       ]
     }
   ],
   projects: [
     {
       title: 'Agricultural ERP Platform',
-      type: 'Work Project',
-      summary: 'Developed a production-grade ERP platform for agricultural operations.',
+      type: 'Professional project',
+      summary: 'A production agricultural ERP platform supporting complex operational and business workflows.',
       details: [
-        'Designed and developed scalable REST APIs using Django REST Framework.',
-        'Implemented a modular Service Layer architecture to improve maintainability and code reuse.',
-        'Integrated React frontend with backend services and optimized data fetching using TanStack Query.',
-        'Collaborated on feature development, API integration, testing, and production deployments within a large-scale enterprise ERP application.'
+        'Contribution — Built Django REST APIs and reusable service-layer components.',
+        'Contribution — Integrated React and TypeScript functionality with backend services.',
+        'Engineering approach — Improved server-state and data-fetching patterns with TanStack Query.'
       ],
-      tags: ['DRF', 'React', 'TypeScript', 'ERP', 'Service Layer'],
+      tags: ['Django', 'DRF', 'React', 'TypeScript', 'TanStack Query'],
       images: []
     },
     {
       title: 'Maintenance & Service Management Platform',
-      type: 'Work Project',
-      summary: 'Built an enterprise management system for weighing companies and maintenance operations.',
+      type: 'Professional project',
+      summary: 'A production system for maintenance contracts, invoicing, preventive visits, inventory, and technician workflows.',
       details: [
-        'Designed a reusable Service Layer shared between Django MVT views and Flutter mobile APIs.',
-        'Developed modules for maintenance contracts, preventive maintenance visits, inventory, technicians, and customer management.',
-        'Refactored approximately 70% of the codebase, improving maintainability and overall application performance.',
-        'Optimized database operations using bulk_create and efficient ORM queries, significantly reducing maintenance contract creation time.'
+        'Contribution — Developed business workflows shared between Django views and Flutter-facing APIs.',
+        'Engineering approach — Centralized reusable domain logic in a shared service layer.',
+        'Engineering approach — Optimized multi-year contract creation with Django ORM and bulk operations.',
+        'Outcome — Reduced contract creation time from 10–13 seconds to 1.25 seconds, approximately 88–90% faster.'
       ],
-      tags: ['Django MVT', 'DRF', 'Flutter', 'Service Layer', 'Performance'],
+      tags: ['Django MVT', 'DRF', 'Flutter', 'Django ORM', 'Bulk Operations'],
       images: []
     },
     {
-      title: 'Supply Chain & Vehicle Weighing Management System',
-      type: 'Work Project',
-      summary: 'Developed an enterprise industrial automation platform for vehicle weighing and logistics.',
+      title: 'Supply Chain & Automated Vehicle Weighing',
+      type: 'Professional project',
+      summary: 'An industrial operations platform connecting backend software with physical automation equipment.',
       details: [
-        'Built a fully automated weighing workflow integrating RFID, PLCs, infrared sensors, automatic barrier gates, traffic lights, and dual-camera systems with zero manual intervention.',
-        'Implemented real-time communication between industrial hardware and backend services for vehicle identification, gate control, and ticket generation.',
-        'Developed logistics, inventory, shipment, supplier, and vehicle management modules with Oracle database synchronization.',
-        'Implemented secure authentication, RBAC, and business workflows for enterprise-scale operations.'
+        'Contribution — Independently implemented integrations with RFID readers, PLCs, infrared sensors, barrier gates, traffic lights, and cameras across backend and frontend workflows.',
+        'Contribution — Designed and implemented automated vehicle weighing workflows.',
+        'Engineering approach — Modeled multi-tenant company, sub-company, and site structures.',
+        'Engineering approach — Built offline-first synchronization with periodic connectivity checks and automatic uploads after reconnection.'
       ],
-      tags: ['Django', 'React', 'Oracle', 'Industrial Automation', 'RFID', 'PLC'],
+      tags: ['Django', 'React', 'Oracle', 'RFID', 'PLC', 'Multi-Tenancy'],
       images: []
     }
   ],
@@ -81,59 +79,32 @@ module.exports = {
     technical: {
       title: 'Technical Skills',
       categories: [
-        {
-          name: 'Backend',
-          items: ['Python', 'Django', 'Django REST Framework (DRF)', 'RESTful APIs', 'Celery', 'JWT Authentication', 'RBAC', 'Service Layer Architecture']
-        },
-        {
-          name: 'Databases',
-          items: ['PostgreSQL', 'Oracle Database', 'MySQL', 'SQLite', 'SQL']
-        },
-        {
-          name: 'Industrial & Integration',
-          items: ['Industrial Automation', 'Hardware Integration', 'PLC Integration', 'RFID Integration', 'Real-Time Systems']
-        },
-        {
-          name: 'Caching & Messaging',
-          items: ['Redis']
-        },
-        {
-          name: 'Frontend',
-          items: ['React', 'JavaScript', 'TypeScript (Basic)', 'HTML', 'CSS', 'Bootstrap']
-        },
-        {
-          name: 'DevOps & Tools',
-          items: ['Docker', 'Git', 'GitHub', 'Linux', 'Postman']
-        },
-        {
-          name: 'Software Engineering',
-          items: ['OOP', 'SOLID Principles', 'Django MVT', 'Unit Testing', 'TDD', 'Performance Optimization']
-        }
+        { name: 'Backend', items: ['Python', 'Django', 'Django REST Framework', 'REST APIs', 'Django ORM', 'Celery', 'Redis', 'JWT', 'RBAC'] },
+        { name: 'Databases', items: ['PostgreSQL', 'Oracle Database', 'MySQL', 'SQLite', 'SQL', 'Query Optimization', 'Bulk Operations'] },
+        { name: 'Testing & DevOps', items: ['pytest', 'pytest-django', 'Backend Testing', 'Integration Testing', 'Regression Testing', 'GitHub Actions CI', 'Docker', 'Git', 'Linux', 'Postman'] },
+        { name: 'Architecture & Integration', items: ['Service Layer', 'OOP', 'SOLID', 'Multi-Tenancy', 'PLC', 'RFID', 'Sensor Integrations', 'Data Synchronization'] },
+        { name: 'Frontend', items: ['React', 'JavaScript', 'HTML', 'CSS', 'Bootstrap', 'TypeScript (Basic)'] }
       ]
     },
     soft: {
-      title: 'Soft Skills',
+      title: 'Professional Skills',
       items: ['Problem Solving', 'Analytical Thinking', 'Teamwork', 'Communication', 'Time Management']
     },
     languages: {
       title: 'Languages',
       items: [
         { name: 'Arabic', level: 'Native' },
-        { name: 'English', level: 'Intermediate (Professional Working Proficiency)' }
+        { name: 'English', level: 'Intermediate' }
       ]
     }
   },
   education: {
     degree: 'B.Eng. in Electronics & Electrical Communication',
+    institution: 'Tanta University',
     year: '2018–2023',
-    grade: 'Overall Grade: Good',
-    project: 'Graduation Project: Smart Agricultural System (Excellent)',
-    training: 'IoT Training – National Telecommunication Institute (NTI), Aug 2022'
+    grade: 'Grade: Good',
+    project: 'Graduation Project: Smart Agricultural System — Excellent',
+    training: 'National Telecommunication Institute (NTI) — IoT Training, August 2022'
   },
-  heroStats: [
-    { value: '1+', label: 'Year of backend experience' },
-    { value: '10+', label: 'Production projects' },
-    { value: 'Django', label: 'DRF & Service Layer' },
-    { value: 'ERP', label: 'Industrial & Weighing Systems' }
-  ]
+  heroStats: []
 };

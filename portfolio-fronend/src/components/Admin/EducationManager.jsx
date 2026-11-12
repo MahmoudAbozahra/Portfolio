@@ -47,6 +47,10 @@ const EducationManager = () => {
             <input name="degree" value={formData.degree || ''} onChange={handleChange} />
           </label>
           <label className="admin-field">
+            <span>Institution</span>
+            <input name="institution" value={formData.institution || ''} onChange={handleChange} />
+          </label>
+          <label className="admin-field">
             <span>Year</span>
             <input name="year" value={formData.year || ''} onChange={handleChange} />
           </label>
